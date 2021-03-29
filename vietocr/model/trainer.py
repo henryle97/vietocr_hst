@@ -58,7 +58,7 @@ class Trainer():
         tensorboard_dir = config['monitor']['log_dir']
         if not os.path.exists(tensorboard_dir):
             os.makedirs(tensorboard_dir, exist_ok=True)
-        self.writter = SummaryWriter(tensorboard_dir)
+        self.writer = SummaryWriter(tensorboard_dir)
 
         if pretrained:
             print("Loading pretrained weight...")
@@ -153,9 +153,9 @@ class Trainer():
                     self.save_weights(self.export_weights)
                     best_acc = acc_full_seq
 
-                self.writter.add_scalar('training_loss', total_loss/self.print_every, self.iter)
-                self.writter.add_scalar('valid loss', val_loss, self.iter)
-                self.writter.add_scalar('WER', wer, self.iter)
+                self.writer.add_scalar('training_loss', total_loss / self.print_every, self.iter)
+                self.writer.add_scalar('valid loss', val_loss, self.iter)
+                self.writer.add_scalar('WER', wer, self.iter)
 
     def validate(self):
         self.model.eval()
@@ -211,18 +211,19 @@ class Trainer():
             if idx == 0:
                 try:
                     fig = plt.figure(figsize=(48, 12))
+                    plt.subplots_adjust(top=1.6)
                     imgs = batch['img'][:5]
                     preds = pred_sents[:5]
                     actuals = actual_sents[:5]
                     for id_img in range(len(imgs)):
                         img = imgs[id_img]
                         img = img.permute(1, 2, 0)
-                        img *= 255.0
                         img = img.cpu().detach().numpy()
-                        ax = fig.add_subplot(4, 1, id_img+1, xticks=[], yticks=[])
-                        plt.imshow(img)
+                        ax = fig.add_subplot(5, 1, id_img+1, xticks=[], yticks=[])
+                        # plt.imshow(img)
                         ax.set_title("LB: {} \n Pred: {}".format(actuals[id_img], preds[id_img]),
-                                     color=('green' if actuals[id_img] == preds[id_img] else 'red'))
+                                     color=('green' if actuals[id_img] == preds[id_img] else 'red'),
+                                     fontdict={'fontsize': 36, 'fontweight': 'medium'})
 
                         self.writer.add_figure('predictions vs. actuals',
                                           fig,
