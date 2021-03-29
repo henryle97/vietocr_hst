@@ -14,4 +14,18 @@ sample_test/e8c6ec52-f59f-47e7-abcf-3200b811e681_12.jpg||||giao dịch lên
 sample_test/e8c6ec52-f59f-47e7-abcf-3200b811e681_13.jpg||||đồng, tổng  ngân
 sample_test/e8c6ec52-f59f-47e7-abcf-3200b811e681_14.jpg||||thể lớn nhất VN; nữ sinh bị bắt vì mang ma tuý; những nốt
 sample_test/e8c6ec52-f59f-47e7-abcf-3200b811e681_15.jpg||||người đàn ông ngày xưa, trước thời đại vi tính
-
+sample_train/261fb6f9-d4c3-41ac-812e-bdd1566b04b9_0.jpg|||| Trong trường học ở Hàn Quốc, chúng mình đều được học cách
+sample_train/261fb6f9-d4c3-41ac-812e-bdd1566b04b9_1.jpg||||khám bác sĩ nói tôi bị ung thư.
+sample_train/261fb6f9-d4c3-41ac-812e-bdd1566b04b9_2.jpg||||các em học sinh ở bản Ông
+sample_train/261fb6f9-d4c3-41ac-812e-bdd1566b04b9_3.jpg||||TS Phạm Tất Dong, Phó Chủ tịch, kiêm Tổng
+sample_train/261fb6f9-d4c3-41ac-812e-bdd1566b04b9_4.jpg||||mà một trí thức trẻ thành đạt
+sample_train/261fb6f9-d4c3-41ac-812e-bdd1566b04b9_5.jpg||||Kodmani   một thành viên của nhóm
+sample_train/261fb6f9-d4c3-41ac-812e-bdd1566b04b9_6.jpg||||Thử làm một phép tính với mức giá
+sample_train/261fb6f9-d4c3-41ac-812e-bdd1566b04b9_7.jpg||||trong dịp này, NAM A BANK được Ủy ban Nhân dân Thành
+sample_train/261fb6f9-d4c3-41ac-812e-bdd1566b04b9_8.jpg||||Trước khi xuất xưởng, chiếc xe phải trải qua một cuộc chạy thử trên
+sample_train/261fb6f9-d4c3-41ac-812e-bdd1566b04b9_9.jpg||||Tôi đi cho vay lãi!
+sample_train/261fb6f9-d4c3-41ac-812e-bdd1566b04b9_10.jpg||||Ông Phạm Quang Nghị chia sẻ
+sample_train/261fb6f9-d4c3-41ac-812e-bdd1566b04b9_11.jpg||||có bầu ngoài ý muốn. Một đám cưới đã đến khi Ngân còn
+sample_train/261fb6f9-d4c3-41ac-812e-bdd1566b04b9_12.jpg||||được đề cử Nữ diễn
+sample_train/261fb6f9-d4c3-41ac-812e-bdd1566b04b9_13.jpg||||nhất trong các phim mình đã làm.
+sample_train/261fb6f9-d4c3-41ac-812e-bdd1566b04b9_14.jpg||||biết ngậm ngùi:  Cái điện thoại đó bây
