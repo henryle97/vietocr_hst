@@ -1,6 +1,7 @@
-einops
-imgaug
+einops==0.2.0
 gdown==3.12.0
+prefetch_generator==1.0.1
+imgaug==0.4.0
 lmdb==1.0.0
 jiwer
 PyYAML==5.4.1

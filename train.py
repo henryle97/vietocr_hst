@@ -16,7 +16,7 @@ def main():
     logger.info("Loaded config from {}".format(args.config))
     # print('-- CONFIG --')
     print(config.pretty_text())
-    print(config)
+    # print(config)
     trainer = Trainer(config)
 
     trainer.train()

@@ -20,9 +20,9 @@ optimizer:
     pct_start: 0.1
 
 trainer:
-    batch_size: 16
-    print_every: 200
-    valid_every: 4000
+    batch_size: 2
+    print_every: 1
+    valid_every: 5
     iters: 100000
     # where to save our model for prediction
     export: ./weights/transformerocr.pth
