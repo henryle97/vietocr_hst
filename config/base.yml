@@ -2,7 +2,7 @@
 vocab: 'aAàÀảẢãÃáÁạẠăĂằẰẳẲẵẴắẮặẶâÂầẦẩẨẫẪấẤậẬbBcCdDđĐeEèÈẻẺẽẼéÉẹẸêÊềỀểỂễỄếẾệỆfFgGhHiIìÌỉỈĩĨíÍịỊjJkKlLmMnNoOòÒỏỎõÕóÓọỌôÔồỒổỔỗỖốỐộỘơƠờỜởỞỡỠớỚợỢpPqQrRsStTuUùÙủỦũŨúÚụỤưƯừỪửỬữỮứỨựỰvVwWxXyYỳỲỷỶỹỸýÝỵỴzZ0123456789!"#$%&''()*+,-./:;<=>?@[\]^_`{|}~ '
 
 # cpu, cuda, cuda:0
-device: cpu
+device: cuda
 
 seq_modeling: transformer
 transformer:  
@@ -20,7 +20,7 @@ optimizer:
     pct_start: 0.1
 
 trainer:
-    batch_size: 2
+    batch_size: 16
     print_every: 1
     valid_every: 5
     iters: 100000
