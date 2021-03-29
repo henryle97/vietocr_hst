@@ -188,8 +188,6 @@ class Trainer():
         pred_sents = []
         actual_sents = []
         img_files = []
-
-
         probs = []
         for idx, batch in enumerate(self.valid_gen):
             batch = self.batch_to_device(batch)
@@ -208,6 +206,7 @@ class Trainer():
             pred_sents.extend(pred_sent)
             actual_sents.extend(actual_sent)
             probs.extend(prob)
+
             # Visualize in tensorboard
             if idx == 0:
                 try:
@@ -223,6 +222,10 @@ class Trainer():
                         plt.imshow(img)
                         ax.set_title("LB: {} \n Pred: {}".format(actuals[id_img], preds[id_img]),
                                      color=('green' if actuals[id_img] == preds[id_img] else 'red'))
+
+                        self.writer.add_figure('predictions vs. actuals',
+                                          fig,
+                                          global_step=self.iter)
                 except Exception as error:
                     print(error)
                     continue
