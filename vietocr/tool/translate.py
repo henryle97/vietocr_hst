@@ -148,7 +148,7 @@ def process_image(image, image_height, image_min_width, image_max_width):
 
     img = img.resize((new_w, image_height), Image.ANTIALIAS)
 
-    img = np.asarray(img).transpose(2,0, 1)
+    img = np.asarray(img).transpose(2,0, 1)   # CxWxH
     img = img/255
     return img
 

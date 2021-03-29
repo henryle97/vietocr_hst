@@ -143,7 +143,6 @@ class Trainer():
                 val_loss = self.validate()
                 acc_full_seq, acc_per_char, wer = self.precision(self.metrics)
 
-                # info = 'iter: {:06d} - valid loss: {:.3f} - acc full seq: {:.4f} - acc per char: {:.4f}'.format(self.iter, val_loss, acc_full_seq, acc_per_char)
                 info = 'iter: {:06d} - valid loss: {:.3f} - acc full seq: {:.4f} - acc per char: {:.4f} - WER: {:.4f} - Time: {:.4f}'.format(self.iter, val_loss, acc_full_seq, acc_per_char, wer, time.time() - val_time)
 
                 print(info)
@@ -189,7 +188,7 @@ class Trainer():
         actual_sents = []
         img_files = []
 
-        for batch in self.valid_gen:
+        for idx, batch in enumerate(self.valid_gen):
             batch = self.batch_to_device(batch)
 
             if self.beamsearch:
@@ -205,9 +204,27 @@ class Trainer():
 
             pred_sents.extend(pred_sent)
             actual_sents.extend(actual_sent)
-            
+
+            # Visualize in tensorboard
+            if idx == 0:
+                fig = plt.figure(figsize=(48, 12))
+                imgs = batch['img'][:5]
+                preds = pred_sents[:5]
+                actuals = actual_sents[:5]
+                imgs = imgs.transpose(0, 2, 3, 1)
+                imgs *= 255
+                for id_img in range(len(imgs)):
+                    ax = fig.add_suplot(4, 1, id_img+1, xsticks=[], ysticks=[])
+                    plt.imshow(imgs[id_img])
+                    ax.set_title("LB: {} \n Pred: {}".format(actuals[id_img], preds[id_img]),
+                                 color=('green' if actuals[id_img] == preds[id_img] else 'red'))
+
+
             if sample != None and len(pred_sents) > sample:
                 break
+
+
+
 
         return pred_sents, actual_sents, img_files, prob
 
@@ -219,6 +236,7 @@ class Trainer():
         acc_per_char = compute_accuracy(actual_sents, pred_sents, mode='per_char')
         wer = compute_accuracy(actual_sents, pred_sents, mode='wer')
 
+
     
         return acc_full_seq, acc_per_char, wer
     
@@ -229,7 +247,7 @@ class Trainer():
         if errorcase:
             wrongs = []
             for i in range(len(img_files)):
-                if pred_sents[i]!= actual_sents[i]:
+                if pred_sents[i] != actual_sents[i]:
                     wrongs.append(i)
 
             pred_sents = [pred_sents[i] for i in wrongs]
@@ -353,13 +371,6 @@ class Trainer():
        
         return gen
 
-    def data_gen_v1(self, lmdb_path, data_root, annotation):
-        data_gen = DataGen(data_root, annotation, self.vocab, 'cpu', 
-                image_height = self.config['dataset']['image_height'],        
-                image_min_width = self.config['dataset']['image_min_width'],
-                image_max_width = self.config['dataset']['image_max_width'])
-
-        return data_gen
 
     def step(self, batch):
         self.model.train()
