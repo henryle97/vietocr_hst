@@ -218,7 +218,7 @@ class Trainer():
                         img = imgs[id_img]
                         img = img.permute(1, 2, 0)
                         img *= 255.0
-                        ax = fig.add_subplot(4, 1, id_img+1, xsticks=[], ysticks=[])
+                        ax = fig.add_subplot(4, 1, id_img+1, xticks=[], yticks=[])
                         plt.imshow(img)
                         ax.set_title("LB: {} \n Pred: {}".format(actuals[id_img], preds[id_img]),
                                      color=('green' if actuals[id_img] == preds[id_img] else 'red'))
