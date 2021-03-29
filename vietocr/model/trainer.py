@@ -210,17 +210,22 @@ class Trainer():
             probs.extend(prob)
             # Visualize in tensorboard
             if idx == 0:
-                fig = plt.figure(figsize=(48, 12))
-                imgs = batch['img'][:5]
-                preds = pred_sents[:5]
-                actuals = actual_sents[:5]
-                imgs = imgs.transpose(0, 2, 3, 1)
-                imgs *= 255
-                for id_img in range(len(imgs)):
-                    ax = fig.add_suplot(4, 1, id_img+1, xsticks=[], ysticks=[])
-                    plt.imshow(imgs[id_img])
-                    ax.set_title("LB: {} \n Pred: {}".format(actuals[id_img], preds[id_img]),
-                                 color=('green' if actuals[id_img] == preds[id_img] else 'red'))
+                try:
+                    fig = plt.figure(figsize=(48, 12))
+                    imgs = batch['img'][:5]
+                    preds = pred_sents[:5]
+                    actuals = actual_sents[:5]
+                    for id_img in range(len(imgs)):
+                        img = imgs[id_img]
+                        img = img.transpose(1, 2, 0)
+                        img *= 255.0
+                        ax = fig.add_suplot(4, 1, id_img+1, xsticks=[], ysticks=[])
+                        plt.imshow(img)
+                        ax.set_title("LB: {} \n Pred: {}".format(actuals[id_img], preds[id_img]),
+                                     color=('green' if actuals[id_img] == preds[id_img] else 'red'))
+                except Exception as error:
+                    print(error)
+                    continue
 
 
             if sample != None and len(pred_sents) > sample:
@@ -236,8 +241,6 @@ class Trainer():
         acc_per_char = compute_accuracy(actual_sents, pred_sents, mode='per_char')
         wer = compute_accuracy(actual_sents, pred_sents, mode='wer')
 
-
-    
         return acc_full_seq, acc_per_char, wer
     
     def visualize_prediction(self, sample=16, errorcase=False, fontname='serif', fontsize=16):
