@@ -218,6 +218,7 @@ class Trainer():
                         img = imgs[id_img]
                         img = img.permute(1, 2, 0)
                         img *= 255.0
+                        img = img.cpu().detach().numpy()
                         ax = fig.add_subplot(4, 1, id_img+1, xticks=[], yticks=[])
                         plt.imshow(img)
                         ax.set_title("LB: {} \n Pred: {}".format(actuals[id_img], preds[id_img]),
