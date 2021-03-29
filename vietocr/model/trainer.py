@@ -61,6 +61,7 @@ class Trainer():
         self.writter = SummaryWriter(tensorboard_dir)
 
         if pretrained:
+            print("Loading pretrained weight...")
             weight_file = download_weights(**config['pretrain'], quiet=config['quiet'])
             self.load_weights(weight_file)
 
@@ -188,6 +189,8 @@ class Trainer():
         actual_sents = []
         img_files = []
 
+
+        probs = []
         for idx, batch in enumerate(self.valid_gen):
             batch = self.batch_to_device(batch)
 
@@ -204,7 +207,7 @@ class Trainer():
 
             pred_sents.extend(pred_sent)
             actual_sents.extend(actual_sent)
-
+            probs.extend(prob)
             # Visualize in tensorboard
             if idx == 0:
                 fig = plt.figure(figsize=(48, 12))
@@ -223,10 +226,7 @@ class Trainer():
             if sample != None and len(pred_sents) > sample:
                 break
 
-
-
-
-        return pred_sents, actual_sents, img_files, prob
+        return pred_sents, actual_sents, img_files, probs
 
     def precision(self, sample=None):
 
