@@ -224,7 +224,7 @@ class Trainer():
                         ax.set_title("LB: {} \n Pred: {}".format(actuals[id_img], preds[id_img]),
                                      color=('green' if actuals[id_img] == preds[id_img] else 'red'),
                                      fontdict={'fontsize': 36, 'fontweight': 'medium'})
-
+                        plt.imshow(img)
                         self.writer.add_figure('predictions vs. actuals',
                                           fig,
                                           global_step=self.iter)
