@@ -1,0 +1,6 @@
+einops
+imgaug
+gdown==3.12.0
+lmdb==1.0.0
+jiwer
+PyYAML==5.4.1
