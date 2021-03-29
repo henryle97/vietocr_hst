@@ -57,7 +57,7 @@ class Trainer():
 
         tensorboard_dir = config['monitor']['log_dir']
         if not os.path.exists(tensorboard_dir):
-            os.mkdir(tensorboard_dir)
+            os.mkdir(tensorboard_dir, parents=True)
         self.writter = SummaryWriter(tensorboard_dir)
 
         if pretrained:
