@@ -30,6 +30,7 @@ trainer:
     log: ./train.log
     # null to disable compuate accuracy, or change to number of sample to enable validiation while training
     metrics: null
+    resume_from:
 
 dataset:    
     # name of your dataset
@@ -60,4 +61,4 @@ predictor:
 quiet: False
 
 monitor:
-    log_file: logs/logging.log
+    log_dir: logs/demo_exp

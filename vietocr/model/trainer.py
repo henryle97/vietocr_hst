@@ -19,6 +19,7 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 import time
+from torch.utils.tensorboard import SummaryWriter
 
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -49,10 +50,15 @@ class Trainer():
         self.export_weights = config['trainer']['export']
         self.metrics = config['trainer']['metrics']
 
+        # LOGGER
         logger = config['trainer']['log']
-    
         if logger:
-            self.logger = Logger(logger) 
+            self.logger = Logger(logger)
+
+        tensorboard_dir = config['monitor']['log_dir']
+        if not os.path.exists(tensorboard_dir):
+            os.mkdir(tensorboard_dir)
+        self.writter = SummaryWriter(tensorboard_dir)
 
         if pretrained:
             weight_file = download_weights(**config['pretrain'], quiet=config['quiet'])
@@ -69,10 +75,18 @@ class Trainer():
 #            **config['optimizer'])
 
         self.criterion = LabelSmoothingLoss(len(self.vocab), padding_idx=self.vocab.pad, smoothing=0.1)
-        
+
+        # Resume
+        if config['trainer']['resume_from']:
+            self.load_checkpoint(config['trainer']['resume_from'])
+            for state in self.optimizer.state.values():
+                for k, v in state.items():
+                    if torch.is_tensor(v):
+                        state[k] = v.to(torch.device(self.device))
+
         transforms = None
         if self.image_aug:
-            transforms =  augmentor
+            transforms = augmentor
 
         self.train_gen = self.data_gen('train_{}'.format(self.dataset_name), 
                 self.data_root, self.train_annotation, self.masked_language_model, transform=transforms)
@@ -113,6 +127,7 @@ class Trainer():
             self.train_losses.append((self.iter, loss))
 
             if self.iter % self.print_every == 0:
+
                 info = 'iter: {:06d} - train loss: {:.3f} - lr: {:.2e} - load time: {:.2f} - gpu time: {:.2f}'.format(self.iter, 
                         total_loss/self.print_every, self.optimizer.param_groups[0]['lr'], 
                         total_loader_time, total_gpu_time)
@@ -138,7 +153,10 @@ class Trainer():
                     self.save_weights(self.export_weights)
                     best_acc = acc_full_seq
 
-            
+                self.writter.add_scalar('training_loss', total_loss/self.print_every, self.iter)
+                self.writter.add_scalar('valid loss', val_loss, self.iter)
+                self.writter.add_scalar('WER', wer, self.iter)
+
     def validate(self):
         self.model.eval()
 
@@ -171,7 +189,7 @@ class Trainer():
         actual_sents = []
         img_files = []
 
-        for batch in  self.valid_gen:
+        for batch in self.valid_gen:
             batch = self.batch_to_device(batch)
 
             if self.beamsearch:
@@ -260,20 +278,20 @@ class Trainer():
 
     def load_checkpoint(self, filename):
         checkpoint = torch.load(filename)
-        
-        optim = ScheduledOptim(
-	       Adam(self.model.parameters(), betas=(0.9, 0.98), eps=1e-09),
-            	self.config['transformer']['d_model'], **self.config['optimizer'])
 
         self.optimizer.load_state_dict(checkpoint['optimizer'])
         self.model.load_state_dict(checkpoint['state_dict'])
         self.iter = checkpoint['iter']
-
         self.train_losses = checkpoint['train_losses']
+        self.scheduler.load_state_dict(checkpoint['scheduler'])
 
     def save_checkpoint(self, filename):
-        state = {'iter': self.iter, 'state_dict': self.model.state_dict(),
-                'optimizer': self.optimizer.state_dict(), 'train_losses': self.train_losses}
+        state = {'iter': self.iter,
+                 'state_dict': self.model.state_dict(),
+                 'optimizer': self.optimizer.state_dict(),
+                 'train_losses': self.train_losses,
+                 'scheduler': self.scheduler.state_dict()
+                 }
         
         path, _ = os.path.split(filename)
         os.makedirs(path, exist_ok=True)

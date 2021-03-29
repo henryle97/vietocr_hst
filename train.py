@@ -17,7 +17,7 @@ def main():
     # print('-- CONFIG --')
     print(config.pretty_text())
     # print(config)
-    trainer = Trainer(config)
+    trainer = Trainer(config, pretrained=True)
 
     trainer.train()
 
