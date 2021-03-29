@@ -216,7 +216,7 @@ class Trainer():
                     actuals = actual_sents[:5]
                     for id_img in range(len(imgs)):
                         img = imgs[id_img]
-                        img = img.transpose(1, 2, 0)
+                        img = img.permute(1, 2, 0)
                         img *= 255.0
                         ax = fig.add_suplot(4, 1, id_img+1, xsticks=[], ysticks=[])
                         plt.imshow(img)

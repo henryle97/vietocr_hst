@@ -38,7 +38,7 @@ dataset:
     # path to annotation and image
     data_root: ./DATA/
     train_annotation: sample_train_labels.txt
-    valid_annotation: sample_test_labels.txt
+    valid_annotation: sample_train_labels.txt
     separate: '||||'
     # resize image to 32 height, larger height will increase accuracy
     image_height: 32
