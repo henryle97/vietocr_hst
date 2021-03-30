@@ -172,7 +172,7 @@ class Trainer():
         
         return total_loss
     
-    def predict(self, sample=None):
+    def predict(self, sample=None, vis_tensorboard=False):
         pred_sents = []
         actual_sents = []
         img_files = []
@@ -266,7 +266,7 @@ class Trainer():
             img = imgs[vis_idx].permute(1, 2, 0).cpu().detach().numpy()
             plt.figure()
             plt.imshow(img)
-            plt.title('prob: {:.3f} - pred: {} - actual: {}'.format(prob, pred_sent, actual_sent), loc='left', fontdict=fontdict)
+            plt.title('pred: {} || prob: {:.3f} \n actual: {}'.format(pred_sent, prob, actual_sent), loc='left', fontdict=fontdict)
             plt.axis('off')
 
         plt.show()
