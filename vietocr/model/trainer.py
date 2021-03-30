@@ -177,7 +177,7 @@ class Trainer():
         actual_sents = []
         img_files = []
         probs = []
-        imgs = []
+        imgs_sents = []
         for idx, batch in enumerate(self.valid_gen):
             batch = self.batch_to_device(batch)
 
@@ -194,7 +194,7 @@ class Trainer():
             pred_sents.extend(pred_sent)
             actual_sents.extend(actual_sent)
             probs.extend(prob)
-            imgs.extend(batch['img'])
+            imgs_sents.extend(batch['img'])
 
             # Visualize in tensorboard
             if idx == 0:
@@ -205,7 +205,7 @@ class Trainer():
                     preds_samples = pred_sents[:num_samples]
                     actuals_samples = actual_sents[:num_samples]
                     probs_samples = probs[:num_samples]
-                    for id_img in range(len(imgs)):
+                    for id_img in range(len(imgs_samples)):
                         img = imgs_samples[id_img]
                         img = img.permute(1, 2, 0)
                         img = img.cpu().detach().numpy()
