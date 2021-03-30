@@ -189,6 +189,7 @@ class Trainer():
         actual_sents = []
         img_files = []
         probs = []
+        imgs = []
         for idx, batch in enumerate(self.valid_gen):
             batch = self.batch_to_device(batch)
 
@@ -202,45 +203,44 @@ class Trainer():
             actual_sent = self.vocab.batch_decode(batch['tgt_output'].tolist())
 
             img_files.extend(batch['filenames'])
-
             pred_sents.extend(pred_sent)
             actual_sents.extend(actual_sent)
             probs.extend(prob)
+            imgs.extend(batch['img'])
 
             # Visualize in tensorboard
             if idx == 0:
                 try:
-                    fig = plt.figure(figsize=(48, 12))
-                    plt.subplots_adjust(top=1.6)
-                    imgs = batch['img'][:5]
-                    preds = pred_sents[:5]
-                    actuals = actual_sents[:5]
+                    num_samples = self.config['monitor']['num_samples']
+                    fig = plt.figure(figsize=(8, 15))
+                    imgs = batch['img'][:num_samples]
+                    preds = pred_sents[:num_samples]
+                    actuals = actual_sents[:num_samples]
                     for id_img in range(len(imgs)):
                         img = imgs[id_img]
                         img = img.permute(1, 2, 0)
                         img = img.cpu().detach().numpy()
-                        ax = fig.add_subplot(5, 1, id_img+1, xticks=[], yticks=[])
-                        # plt.imshow(img)
+                        ax = fig.add_subplot(num_samples, 1, id_img+1, xticks=[], yticks=[])
+                        plt.imshow(img)
                         ax.set_title("LB: {} \n Pred: {}".format(actuals[id_img], preds[id_img]),
                                      color=('green' if actuals[id_img] == preds[id_img] else 'red'),
-                                     fontdict={'fontsize': 36, 'fontweight': 'medium'})
-                        plt.imshow(img)
-                        self.writer.add_figure('predictions vs. actuals',
-                                          fig,
-                                          global_step=self.iter)
+                                     fontdict={'fontsize': 18, 'fontweight': 'medium'})
+
+                    self.writer.add_figure('predictions vs. actuals',
+                                      fig,
+                                      global_step=self.iter)
                 except Exception as error:
                     print(error)
                     continue
 
-
             if sample != None and len(pred_sents) > sample:
                 break
 
-        return pred_sents, actual_sents, img_files, probs
+        return pred_sents, actual_sents, img_files, probs, imgs
 
     def precision(self, sample=None):
 
-        pred_sents, actual_sents, _, _ = self.predict(sample=sample)
+        pred_sents, actual_sents, _, _, _ = self.predict(sample=sample)
 
         acc_full_seq = compute_accuracy(actual_sents, pred_sents, mode='full_sequence')
         acc_per_char = compute_accuracy(actual_sents, pred_sents, mode='per_char')
@@ -250,7 +250,7 @@ class Trainer():
     
     def visualize_prediction(self, sample=16, errorcase=False, fontname='serif', fontsize=16):
         
-        pred_sents, actual_sents, img_files, probs = self.predict(sample)
+        pred_sents, actual_sents, img_files, probs, imgs = self.predict(sample)
 
         if errorcase:
             wrongs = []
@@ -271,12 +271,10 @@ class Trainer():
                 } 
 
         for vis_idx in range(0, len(img_files)):
-            img_path = img_files[vis_idx]
             pred_sent = pred_sents[vis_idx]
             actual_sent = actual_sents[vis_idx]
             prob = probs[vis_idx]
-
-            img = Image.open(open(img_path, 'rb'))
+            img = imgs[vis_idx].permute(1, 2, 0).cpu().detach().numpy()
             plt.figure()
             plt.imshow(img)
             plt.title('prob: {:.3f} - pred: {} - actual: {}'.format(prob, pred_sent, actual_sent), loc='left', fontdict=fontdict)

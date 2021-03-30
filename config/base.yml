@@ -62,3 +62,4 @@ quiet: False
 
 monitor:
     log_dir: logs/demo_exp
+    num_samples: 8
