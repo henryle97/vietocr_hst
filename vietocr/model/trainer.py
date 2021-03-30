@@ -141,8 +141,10 @@ class Trainer():
 
                 self.save_checkpoint(self.tensorboard_dir + "/last.pt")
 
-                self.writer.add_scalar('training_loss', lastest_loss, self.iter)
-                self.writer.add_scalar('valid loss', val_loss, self.iter)
+                log_loss = {'train loss': lastest_loss,
+                            'val loss': val_loss}
+                self.writer.add_scalar('Loss', log_loss, self.iter)
+                # self.writer.add_scalar('valid loss', val_loss, self.iter)
                 self.writer.add_scalar('WER', wer, self.iter)
 
     def validate(self):
