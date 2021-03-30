@@ -178,6 +178,7 @@ class Trainer():
         img_files = []
         probs = []
         imgs_sents = []
+
         for idx, batch in enumerate(self.valid_gen):
             batch = self.batch_to_device(batch)
 
@@ -189,13 +190,11 @@ class Trainer():
 
             pred_sent = self.vocab.batch_decode(translated_sentence.tolist())
             actual_sent = self.vocab.batch_decode(batch['tgt_output'].tolist())
-
+            imgs_sents.extend(batch['img'])
             img_files.extend(batch['filenames'])
             pred_sents.extend(pred_sent)
             actual_sents.extend(actual_sent)
             probs.extend(prob)
-            imgs_sents.extend(batch['img'])
-
 
             # Visualize in tensorboard
             if idx == 0:
