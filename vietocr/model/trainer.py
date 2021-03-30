@@ -201,12 +201,12 @@ class Trainer():
                 try:
                     num_samples = self.config['monitor']['num_samples']
                     fig = plt.figure(figsize=(8, 15))
-                    imgs = batch['img'][:num_samples]
+                    imgs_samples = batch['img'][:num_samples]
                     preds_samples = pred_sents[:num_samples]
                     actuals_samples = actual_sents[:num_samples]
                     probs_samples = probs[:num_samples]
                     for id_img in range(len(imgs)):
-                        img = imgs[id_img]
+                        img = imgs_samples[id_img]
                         img = img.permute(1, 2, 0)
                         img = img.cpu().detach().numpy()
                         ax = fig.add_subplot(num_samples, 1, id_img+1, xticks=[], yticks=[])
