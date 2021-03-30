@@ -196,12 +196,13 @@ class Trainer():
             probs.extend(prob)
             imgs_sents.extend(batch['img'])
 
+
             # Visualize in tensorboard
             if idx == 0:
                 try:
                     num_samples = self.config['monitor']['num_samples']
                     fig = plt.figure(figsize=(8, 15))
-                    imgs_samples = batch['img'][:num_samples]
+                    imgs_samples = imgs_sents[:num_samples]
                     preds_samples = pred_sents[:num_samples]
                     actuals_samples = actual_sents[:num_samples]
                     probs_samples = probs[:num_samples]
@@ -225,7 +226,7 @@ class Trainer():
             if sample != None and len(pred_sents) > sample:
                 break
 
-        return pred_sents, actual_sents, img_files, probs, imgs
+        return pred_sents, actual_sents, img_files, probs, imgs_sents
 
     def precision(self, sample=None):
 
