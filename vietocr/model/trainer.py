@@ -118,7 +118,7 @@ class Trainer():
                 info = 'iter: {:06d} - train loss: {:.3f} - lr: {:.2e} - load time: {:.2f} - gpu time: {:.2f}'.format(self.iter, 
                         total_loss/self.print_every, self.optimizer.param_groups[0]['lr'], 
                         total_loader_time, total_gpu_time)
-
+                lastest_loss = total_loss/self.print_every
                 total_loss = 0
                 total_loader_time = 0
                 total_gpu_time = 0
@@ -141,7 +141,7 @@ class Trainer():
 
                 self.save_checkpoint(self.tensorboard_dir + "/last.pt")
 
-                self.writer.add_scalar('training_loss', total_loss / self.print_every, self.iter)
+                self.writer.add_scalar('training_loss', lastest_loss, self.iter)
                 self.writer.add_scalar('valid loss', val_loss, self.iter)
                 self.writer.add_scalar('WER', wer, self.iter)
 
@@ -202,16 +202,17 @@ class Trainer():
                     num_samples = self.config['monitor']['num_samples']
                     fig = plt.figure(figsize=(8, 15))
                     imgs = batch['img'][:num_samples]
-                    preds = pred_sents[:num_samples]
-                    actuals = actual_sents[:num_samples]
+                    preds_samples = pred_sents[:num_samples]
+                    actuals_samples = actual_sents[:num_samples]
+                    probs_samples = probs[:num_samples]
                     for id_img in range(len(imgs)):
                         img = imgs[id_img]
                         img = img.permute(1, 2, 0)
                         img = img.cpu().detach().numpy()
                         ax = fig.add_subplot(num_samples, 1, id_img+1, xticks=[], yticks=[])
                         plt.imshow(img)
-                        ax.set_title("LB: {} \n Pred: {}".format(actuals[id_img], preds[id_img]),
-                                     color=('green' if actuals[id_img] == preds[id_img] else 'red'),
+                        ax.set_title("LB: {} \n Pred: {:.4f}-{}".format(actuals_samples[id_img], probs_samples[id_img], preds_samples[id_img]),
+                                     color=('green' if actuals_samples[id_img] == preds_samples[id_img] else 'red'),
                                      fontdict={'fontsize': 18, 'fontweight': 'medium'})
 
                     self.writer.add_figure('predictions vs. actuals',
