@@ -6,23 +6,18 @@ from vietocr.tool.translate import translate, batch_translate_beam_search
 from vietocr.tool.utils import download_weights
 from vietocr.tool.logger import Logger
 from vietocr.loader.aug import ImgAugTransform
-
 import torch
-from vietocr.loader.dataloader_v1 import DataGen
 from vietocr.loader.dataloader import OCRDataset, ClusterRandomSampler, Collator
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import CosineAnnealingLR, CyclicLR, OneCycleLR
 
 from vietocr.tool.utils import compute_accuracy
-from PIL import Image
 import numpy as np
 import os
 import matplotlib.pyplot as plt
 import time
 from torch.utils.tensorboard import SummaryWriter
 
-def count_parameters(model):
-    return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 class Trainer():
     def __init__(self, config, pretrained=True, augmentor=ImgAugTransform()):
@@ -45,20 +40,17 @@ class Trainer():
         
         self.image_aug = config['aug']['image_aug']
         self.masked_language_model = config['aug']['masked_language_model']
-
-        self.checkpoint = config['trainer']['checkpoint']
-        self.export_weights = config['trainer']['export']
         self.metrics = config['trainer']['metrics']
 
         # LOGGER
-        logger = config['trainer']['log']
-        if logger:
-            self.logger = Logger(logger)
+        # logger = config['trainer']['log']
+        # if logger:
+        #     self.logger = Logger(logger)
 
-        tensorboard_dir = config['monitor']['log_dir']
-        if not os.path.exists(tensorboard_dir):
-            os.makedirs(tensorboard_dir, exist_ok=True)
-        self.writer = SummaryWriter(tensorboard_dir)
+        self.tensorboard_dir = config['monitor']['log_dir']
+        if not os.path.exists( self.tensorboard_dir):
+            os.makedirs(self.tensorboard_dir, exist_ok=True)
+        self.writer = SummaryWriter(self.tensorboard_dir)
 
         if pretrained:
             print("Loading pretrained weight...")
@@ -69,12 +61,6 @@ class Trainer():
         
         self.optimizer = AdamW(self.model.parameters(), betas=(0.9, 0.98), eps=1e-09)
         self.scheduler = OneCycleLR(self.optimizer, total_steps=self.num_iters, **config['optimizer'])
-#        self.optimizer = ScheduledOptim(
-#            Adam(self.model.parameters(), betas=(0.9, 0.98), eps=1e-09),
-#            #config['transformer']['d_model'], 
-#            512,
-#            **config['optimizer'])
-
         self.criterion = LabelSmoothingLoss(len(self.vocab), padding_idx=self.vocab.pad, smoothing=0.1)
 
         # Resume
@@ -89,10 +75,10 @@ class Trainer():
         if self.image_aug:
             transforms = augmentor
 
-        self.train_gen = self.data_gen('train_{}'.format(self.dataset_name), 
+        self.train_gen = self.data_gen(self.data_root + "/" + 'train_{}'.format(self.dataset_name),
                 self.data_root, self.train_annotation, self.masked_language_model, transform=transforms)
         if self.valid_annotation:
-            self.valid_gen = self.data_gen('valid_{}'.format(self.dataset_name), 
+            self.valid_gen = self.data_gen(self.data_root + "/" + 'valid_{}'.format(self.dataset_name),
                     self.data_root, self.valid_annotation, masked_language_model=False)
 
         self.train_losses = []
@@ -150,8 +136,10 @@ class Trainer():
                 self.logger.log(info)
 
                 if acc_full_seq > best_acc:
-                    self.save_weights(self.export_weights)
+                    self.save_weights(self.tensorboard_dir + "/best.pt")
                     best_acc = acc_full_seq
+
+                self.save_checkpoint(self.tensorboard_dir + "/last.pt")
 
                 self.writer.add_scalar('training_loss', total_loss / self.print_every, self.iter)
                 self.writer.add_scalar('valid loss', val_loss, self.iter)
@@ -403,3 +391,7 @@ class Trainer():
         loss_item = loss.item()
 
         return loss_item
+
+    def count_parameters(self, model):
+        return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
