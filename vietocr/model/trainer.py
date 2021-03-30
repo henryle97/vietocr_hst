@@ -82,7 +82,7 @@ class Trainer():
                     self.data_root, self.valid_annotation, masked_language_model=False)
 
         self.train_losses = []
-        print("Number batch samples of training: ", len(self.train_gen))
+        print("\nNumber batch samples of training: ", len(self.train_gen))
         print("Number batch samples of valid: ", len(self.valid_gen))
         
     def train(self):
@@ -202,7 +202,7 @@ class Trainer():
             if idx == 0:
                 try:
                     num_samples = self.config['monitor']['num_samples']
-                    fig = plt.figure(figsize=(8, 15))
+                    fig = plt.figure(figsize=(12, 15))
                     imgs_samples = imgs_sents[:num_samples]
                     preds_samples = pred_sents[:num_samples]
                     actuals_samples = actual_sents[:num_samples]

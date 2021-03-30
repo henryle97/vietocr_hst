@@ -39,7 +39,7 @@ def createDataset(outputPath, root_dir, annotation_path, separate):
     """
 
     annotation_path = os.path.join(root_dir, annotation_path)
-    vocab = set()
+    # vocab = set()
     with open(annotation_path, 'r', encoding='utf-8') as ann_file:
         lines = ann_file.readlines()
         annotations = [l.strip().split(separate) for l in lines]
@@ -54,7 +54,7 @@ def createDataset(outputPath, root_dir, annotation_path, separate):
     for i in pbar:
         imageFile, label = annotations[i]
         imagePath = os.path.join(root_dir, imageFile)
-        vocab.update(list(label))
+        # vocab.update(list(label))
 
         if not os.path.exists(imagePath):
             error += 1
@@ -90,7 +90,7 @@ def createDataset(outputPath, root_dir, annotation_path, separate):
 
     if error > 0:
         print('Remove {} invalid images'.format(error))
-    print('Created dataset with %d samples' % nSamples)
-    print("Vocab from dataset: ", sorted(vocab))
+    # print('Created dataset with %d samples' % nSamples)
+    # print("Vocab from dataset: ", sorted(vocab))
     sys.stdout.flush()
 
