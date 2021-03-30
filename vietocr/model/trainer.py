@@ -123,7 +123,7 @@ class Trainer():
                 total_loader_time = 0
                 total_gpu_time = 0
                 print(info) 
-                self.logger.log(info)
+                # self.logger.log(info)
 
             if self.valid_annotation and self.iter % self.valid_every == 0:
                 val_time = time.time()
@@ -133,7 +133,7 @@ class Trainer():
                 info = 'iter: {:06d} - valid loss: {:.3f} - acc full seq: {:.4f} - acc per char: {:.4f} - WER: {:.4f} - Time: {:.4f}'.format(self.iter, val_loss, acc_full_seq, acc_per_char, wer, time.time() - val_time)
 
                 print(info)
-                self.logger.log(info)
+                # self.logger.log(info)
 
                 if acc_full_seq > best_acc:
                     self.save_weights(self.tensorboard_dir + "/best.pt")
