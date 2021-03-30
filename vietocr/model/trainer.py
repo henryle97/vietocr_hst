@@ -176,7 +176,7 @@ class Trainer():
         pred_sents = []
         actual_sents = []
         img_files = []
-        probs = []
+        probs_sents = []
         imgs_sents = []
 
         for idx, batch in enumerate(self.valid_gen):
@@ -190,11 +190,13 @@ class Trainer():
 
             pred_sent = self.vocab.batch_decode(translated_sentence.tolist())
             actual_sent = self.vocab.batch_decode(batch['tgt_output'].tolist())
-            imgs_sents.extend(batch['img'])
-            img_files.extend(batch['filenames'])
             pred_sents.extend(pred_sent)
             actual_sents.extend(actual_sent)
-            probs.extend(prob)
+
+            imgs_sents.extend(batch['img'])
+            # img_files.extend(batch['filenames'])
+            probs_sents.extend(prob)
+
 
             # Visualize in tensorboard
             if idx == 0:
@@ -204,7 +206,7 @@ class Trainer():
                     imgs_samples = imgs_sents[:num_samples]
                     preds_samples = pred_sents[:num_samples]
                     actuals_samples = actual_sents[:num_samples]
-                    probs_samples = probs[:num_samples]
+                    probs_samples = probs_sents[:num_samples]
                     for id_img in range(len(imgs_samples)):
                         img = imgs_samples[id_img]
                         img = img.permute(1, 2, 0)
@@ -225,7 +227,7 @@ class Trainer():
             if sample != None and len(pred_sents) > sample:
                 break
 
-        return pred_sents, actual_sents, img_files, probs, imgs_sents
+        return pred_sents, actual_sents, img_files, probs_sents, imgs_sents
 
     def precision(self, sample=None):
 
