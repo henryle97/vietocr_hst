@@ -52,16 +52,27 @@ class Trainer():
             os.makedirs(self.tensorboard_dir, exist_ok=True)
         self.writer = SummaryWriter(self.tensorboard_dir)
 
-        if pretrained:
-            print("Loading pretrained weight...")
-            weight_file = download_weights(**config['pretrain'], quiet=config['quiet'])
-            self.load_weights(weight_file)
+        # if pretrained:
+        #     print("Loading pretrained weight...")
+        #     weight_file = download_weights(**config['pretrain'], quiet=config['quiet'])
+        #     self.load_weights(weight_file)
+        if config['trainer']['pretrained']:
+            self.load_weights(config['trainer']['pretrained'])
 
         self.iter = 0
-        
-        self.optimizer = AdamW(self.model.parameters(), betas=(0.9, 0.98), eps=1e-09)
-        self.scheduler = OneCycleLR(self.optimizer, total_steps=self.num_iters, **config['optimizer'])
+
+        self.scheduler = None
+        self.is_finetuning = config['trainer']['is_finetuning']
+        if self.is_finetuning:
+            self.optimizer = AdamW(lr=0.0001, params=self.model.parameters(), betas=(0.9, 0.98), eps=1e-09)
+
+        else:
+            self.optimizer = AdamW(self.model.parameters(), betas=(0.9, 0.98), eps=1e-09)
+            self.scheduler = OneCycleLR(self.optimizer, total_steps=self.num_iters, **config['optimizer'])
+
         self.criterion = LabelSmoothingLoss(len(self.vocab), padding_idx=self.vocab.pad, smoothing=0.1)
+
+
 
         # Resume
         if config['trainer']['resume_from']:
@@ -391,7 +402,9 @@ class Trainer():
         torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1) 
 
         self.optimizer.step()
-        self.scheduler.step()
+
+        if not self.is_finetuning:
+            self.scheduler.step()
 
         loss_item = loss.item()
 
