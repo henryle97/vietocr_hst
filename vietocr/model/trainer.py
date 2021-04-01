@@ -311,14 +311,15 @@ class Trainer():
         self.model.load_state_dict(checkpoint['state_dict'])
         self.iter = checkpoint['iter']
         self.train_losses = checkpoint['train_losses']
-        self.scheduler.load_state_dict(checkpoint['scheduler'])
+        if self.scheduler is not None:
+            self.scheduler.load_state_dict(checkpoint['scheduler'])
 
     def save_checkpoint(self, filename):
         state = {'iter': self.iter,
                  'state_dict': self.model.state_dict(),
                  'optimizer': self.optimizer.state_dict(),
                  'train_losses': self.train_losses,
-                 'scheduler': self.scheduler.state_dict()
+                 'scheduler': None if self.scheduler is None else self.scheduler.state_dict()
                  }
         
         path, _ = os.path.split(filename)
