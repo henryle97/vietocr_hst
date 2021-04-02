@@ -27,6 +27,25 @@ def writeCache(env, cache):
         for k, v in cache.items():
             txn.put(k.encode(), v)
 
+
+def calculate_max_mapsize(nSamples, outputPath,root_dir, annotations):
+    maxsize = 0
+    pbar = tqdm(range(nSamples), ncols=100, desc='Create {}'.format(outputPath))
+    for i in pbar:
+        imageFile, _ = annotations[i]
+        imagePath = os.path.join(root_dir, imageFile)
+
+        if not os.path.exists(imagePath):
+            continue
+
+        fileSize = os.stat(imagePath).st_size
+        maxsize = max(fileSize, maxsize)
+
+        max_mapsize = maxsize * (nSamples+10)
+
+    return max_mapsize
+
+
 def createDataset(outputPath, root_dir, annotation_path, separate):
     """
     Create LMDB dataset for CRNN training.
@@ -45,7 +64,8 @@ def createDataset(outputPath, root_dir, annotation_path, separate):
         annotations = [l.strip().split(separate) for l in lines]
 
     nSamples = len(annotations)
-    env = lmdb.open(outputPath, map_size=4511627776)
+    max_mapsize = calculate_max_mapsize(nSamples, outputPath, root_dir, annotations)
+    env = lmdb.open(outputPath, map_size=max_mapsize)  # 4 bilion byte ~ 4GB
     cache = {}
     cnt = 0
     error = 0

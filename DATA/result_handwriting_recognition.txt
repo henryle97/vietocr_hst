@@ -1,0 +1,24 @@
+
+
+Task 1: Handwriting recognition
+* DATASET: VNonDB: 5k training, 1k6 testing
+* MODEL: Seq2Seq
+
+
+1. Pretraining 200k synth + 5k real
+    - Iter: 120k:
+        + OneCycleLR: MAX_LR=3e-4,pct_start=0.1
+        + WER=0.17
+
+    - Finetuning more 50k on 5k real:
+        + LR=1e-4
+        + WER=0.1211 (iter 26k)
+        + LR=1e-5 from iter 26k
+
+
+2. Training 5k real:
+    - Iter: 50000 :
+        + OneCycleLR: MAX_LR=3e-4,pct_start=0.1
+        + WER=0.1081
+
+
