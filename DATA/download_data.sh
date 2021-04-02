@@ -8,6 +8,7 @@ mkdir valid_hw
 gdown --id 1aDyg7pN5DZoiIGu6TPf9UtMGuAtzphtC
 gdown --id 1gQB3mnfQ0ANPF5kJySs9fzrmCI0WOHzj
 
-#cd ..
-#mkdir train_hw_synth
-#gdown --id
+cd ..
+mkdir train_hw_synth
+gdown --id 1RLIy1zu_heExlRYBjlus2d5-3yZQ5XZY
+gdown --id 1mARMR9uAN8G8F4S5a-mAiYqnT97OxGLs
