@@ -15,9 +15,29 @@ def main():
     config = Cfg.load_config_from_file(args.config, download_base=False)
     logger.info("Loaded config from {}".format(args.config))
     # print('-- CONFIG --')
+    dataset_params = {
+        'name': 'hw_small',
+        'data_root': './DATA',
+    }
+    config['monitor']['log_dir'] = './logs/hw_small'
+
+    trainer_params = {
+        'batch_size': 32,
+        'print_every': 50,
+        'valid_every': 5 * 50,
+        'iters': 100000,
+    }
+    config['trainer']['metrics'] = 2000
+    config['trainer'].update(trainer_params)
+    # config['trainer']['resume_from'] = './logs/hw_small_finetuning/last.pt'
+    # config['trainer']['is_finetuning'] = True
+    config['dataset'].update(dataset_params)
+
+
+
     print(config.pretty_text())
     # print(config)
-    trainer = Trainer(config, pretrained=True)
+    trainer = Trainer(config, pretrained=False)
 
     trainer.train()
 
