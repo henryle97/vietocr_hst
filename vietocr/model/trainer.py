@@ -57,13 +57,17 @@ class Trainer():
         #     weight_file = download_weights(**config['pretrain'], quiet=config['quiet'])
         #     self.load_weights(weight_file)
         if config['trainer']['pretrained']:
+
             self.load_weights(config['trainer']['pretrained'])
+            print("Loaded trained model from: {}".format(config['trainer']['pretrained']))
 
         self.iter = 0
+        self.best_acc = 0
 
         self.scheduler = None
         self.is_finetuning = config['trainer']['is_finetuning']
         if self.is_finetuning:
+            print("Finetuning model ---->")
             self.optimizer = AdamW(lr=0.0001, params=self.model.parameters(), betas=(0.9, 0.98), eps=1e-09)
 
         else:
@@ -81,6 +85,8 @@ class Trainer():
                 for k, v in state.items():
                     if torch.is_tensor(v):
                         state[k] = v.to(torch.device(self.device))
+
+            print("Resume from {}".format(config['trainer']['resume_from']))
 
         transforms = None
         if self.image_aug:
@@ -146,9 +152,9 @@ class Trainer():
                 print(info)
                 # self.logger.log(info)
 
-                if acc_full_seq > best_acc:
+                if acc_full_seq > self.best_acc:
                     self.save_weights(self.tensorboard_dir + "/best.pt")
-                    best_acc = acc_full_seq
+                    self.best_acc = acc_full_seq
 
                 self.save_checkpoint(self.tensorboard_dir + "/last.pt")
 
@@ -314,12 +320,15 @@ class Trainer():
         if self.scheduler is not None:
             self.scheduler.load_state_dict(checkpoint['scheduler'])
 
+        self.best_acc = checkpoint['best_acc']
+
     def save_checkpoint(self, filename):
         state = {'iter': self.iter,
                  'state_dict': self.model.state_dict(),
                  'optimizer': self.optimizer.state_dict(),
                  'train_losses': self.train_losses,
-                 'scheduler': None if self.scheduler is None else self.scheduler.state_dict()
+                 'scheduler': None if self.scheduler is None else self.scheduler.state_dict(),
+                 'best_acc': self.best_acc
                  }
         
         path, _ = os.path.split(filename)
