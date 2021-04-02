@@ -26,11 +26,14 @@ def main():
         'print_every': 50,
         'valid_every': 5 * 50,
         'iters': 100000,
+        'metrics': 2000,
+        'pretrained': None,
+        'resume_from': None,
+        'is_finetuning': False
     }
-    config['trainer']['metrics'] = 2000
+
     config['trainer'].update(trainer_params)
     # config['trainer']['resume_from'] = './logs/hw_small_finetuning/last.pt'
-    # config['trainer']['is_finetuning'] = True
     config['dataset'].update(dataset_params)
 
 
