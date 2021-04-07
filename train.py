@@ -25,16 +25,16 @@ def main():
         'batch_size': 32,
         'print_every': 50,
         'valid_every': 5 * 50,
-        'iters': 100000,
+        'iters': 150000,
         'metrics': 2000,
         'pretrained': None,
         'resume_from': None,
         'is_finetuning': False
     }
-    optim_params = {
-        'max_lr': 0.00001
-    }
-    config['optimizer'].update(optim_params)
+    # optim_params = {
+    #     'max_lr': 0.00001
+    # }
+    # config['optimizer'].update(optim_params)
 
     config['trainer'].update(trainer_params)
     # config['trainer']['resume_from'] = './logs/hw_small_finetuning/last.pt'

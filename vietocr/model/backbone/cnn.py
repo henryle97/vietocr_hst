@@ -3,7 +3,7 @@ from torch import nn
 
 import vietocr.model.backbone.vgg as vgg
 from vietocr.model.backbone.resnet import Resnet50
-from vietocr.model.backbone.vgg_2015 import VGG_FeatureExtractor
+from vietocr.model.backbone.vgg_2015 import vgg_2015
 
 class CNN(nn.Module):
     def __init__(self, backbone, **kwargs):
@@ -16,7 +16,7 @@ class CNN(nn.Module):
         elif backbone == 'resnet50':
             self.model = Resnet50(**kwargs)
         elif backbone == 'vgg_crnn':
-            self.model = VGG_FeatureExtractor(**kwargs)
+            self.model = vgg_2015(**kwargs)
 
     def forward(self, x):
         return self.model(x)

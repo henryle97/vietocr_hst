@@ -36,6 +36,7 @@ def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
+
 class CRNN(nn.Module):
 
     def __init__(self, imgH, nc, nclass, nh, n_rnn=2, leakyRelu=False):
@@ -100,6 +101,9 @@ class CRNN(nn.Module):
     def backward_hook(self, module, grad_input, grad_output):
         for g in grad_input:
             g[g != g] = 0  # replace all nan/inf in gradients to zero
+
+def vgg_2015(ss, hidden):
+    return VGG_FeatureExtractor(3, hidden)
 
 if __name__ == "__main__":
     ss = [[2, 2],  # stride size
