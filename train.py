@@ -6,7 +6,7 @@ logging.basicConfig(format='%(asctime)s-%(levelname)s-%(message)s', level=loggin
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type=str, default="config/vgg-seq2seq.yml", help='config path ')
+    parser.add_argument('--config', type=str, default="config/vgg-crnn.yml", help='config path ')
     # parser.add_argument('--checkpoint', required=False, help='your checkpoint')
 
     args = parser.parse_args()
@@ -16,10 +16,10 @@ def main():
     logger.info("Loaded config from {}".format(args.config))
     # print('-- CONFIG --')
     dataset_params = {
-        'name': 'hw_small',
+        'name': 'hw_real',
         'data_root': './DATA',
     }
-    config['monitor']['log_dir'] = './logs/hw_small'
+    config['monitor']['log_dir'] = './logs/hw_real_crnn'
 
     trainer_params = {
         'batch_size': 32,
@@ -45,7 +45,7 @@ def main():
     print(config.pretty_text())
     # print(config)
     trainer = Trainer(config, pretrained=False)
-
+    # trainer.visualize_dataset()
     trainer.train()
 
 if __name__ == '__main__':
