@@ -162,11 +162,13 @@ class Collator(object):
         target_weights = []
         tgt_input = []
         max_label_len = max(len(sample['word']) for sample in batch)
+        len_text = []
         for sample in batch:
             img.append(sample['img'])
             filenames.append(sample['img_path'])
             label = sample['word']
             label_len = len(label)
+            len_text.append(label_len)
             
             
             tgt = np.concatenate((
@@ -200,7 +202,8 @@ class Collator(object):
             'tgt_input': torch.LongTensor(tgt_input),
             'tgt_output': torch.LongTensor(tgt_output),
             'tgt_padding_mask': torch.BoolTensor(tgt_padding_mask),
-            'filenames': filenames
+            'filenames': filenames,
+            'labels_len': torch.IntTensor(len_text)
         }   
         
         return rs
