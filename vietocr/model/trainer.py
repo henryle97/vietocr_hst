@@ -411,7 +411,7 @@ class Trainer():
         tgt_output = tgt_output.view(-1)#flatten()    # B*S
         if self.model.seq_modeling == 'crnn':
             length = batch['labels_len']
-            preds_size = torch.Variable(torch.IntTensor([outputs.size(0)] * self.batch_size))
+            preds_size = torch.autograd.Variable(torch.IntTensor([outputs.size(0)] * self.batch_size))
             loss = self.criterion(outputs, tgt_output, preds_size, length)
         else:
 
