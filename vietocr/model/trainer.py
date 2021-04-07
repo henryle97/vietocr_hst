@@ -369,7 +369,8 @@ class Trainer():
         batch = {
                 'img': img, 'tgt_input':tgt_input, 
                 'tgt_output':tgt_output, 'tgt_padding_mask':tgt_padding_mask, 
-                'filenames': batch['filenames']
+                'filenames': batch['filenames'],
+                'labels_len': batch['labels_len']
                 }
 
         return batch
