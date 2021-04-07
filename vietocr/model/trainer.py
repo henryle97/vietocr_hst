@@ -76,7 +76,7 @@ class Trainer():
             self.scheduler = OneCycleLR(self.optimizer, total_steps=self.num_iters, **config['optimizer'])
 
         if self.model.seq_modeling == 'crnn':
-            self.criterion = torch.nn.CTCLoss(self.vocab.pad)
+            self.criterion = torch.nn.CTCLoss(self.vocab.pad, zero_infinity=True)
         else:
             self.criterion = LabelSmoothingLoss(len(self.vocab), padding_idx=self.vocab.pad, smoothing=0.1)
 
