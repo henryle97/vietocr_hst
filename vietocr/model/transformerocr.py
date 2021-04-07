@@ -2,6 +2,7 @@ from vietocr.model.backbone.cnn import CNN
 from vietocr.model.seqmodel.transformer import LanguageTransformer
 from vietocr.model.seqmodel.seq2seq import Seq2Seq
 from vietocr.model.seqmodel.convseq2seq import ConvSeq2Seq
+from vietocr.model.seqmodel.bilstm import RNN_layer
 from torch import nn
 
 class VietOCR(nn.Module):
@@ -21,6 +22,8 @@ class VietOCR(nn.Module):
             self.transformer = Seq2Seq(vocab_size, **transformer_args)
         elif seq_modeling == 'convseq2seq':
             self.transformer = ConvSeq2Seq(vocab_size, **transformer_args)
+        elif seq_modeling == 'crnn':
+            self.transformer = RNN_layer(n_in=cnn_args['hidden'], n_hidden=transformer_args['n_hidden'], n_class=vocab_size)
         else:
             raise('Not Support Seq Model')
 
@@ -40,6 +43,8 @@ class VietOCR(nn.Module):
             outputs = self.transformer(src, tgt_input)
         elif self.seq_modeling == 'convseq2seq': 
             outputs = self.transformer(src, tgt_input)
+        elif self.seq_modeling == 'crnn':
+            outputs = self.transformer(src)
         return outputs
 
 

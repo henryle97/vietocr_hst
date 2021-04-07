@@ -22,3 +22,10 @@ Task 1: Handwriting recognition
         + WER=0.1081
 
 
+    - Transformer ( 4 encoder, 4 decoder):
+        + sever .50
+        + 120k iter
+        + Lr :3e-4, onecycle
+        + gpu time: 20s/100iter
+
+

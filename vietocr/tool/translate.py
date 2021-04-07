@@ -94,7 +94,7 @@ def translate(img, model, max_seq_length=128, sos_token=1, eos_token=2):
             output = softmax(output, dim=-1)
             output = output.to('cpu')
 
-            values, indices  = torch.topk(output, 5)
+            values, indices = torch.topk(output, 5)
             
             indices = indices[:, -1, 0]
             indices = indices.tolist()
@@ -115,6 +115,27 @@ def translate(img, model, max_seq_length=128, sos_token=1, eos_token=2):
         char_probs = np.sum(char_probs, axis=-1)/(char_probs>0).sum(-1)
     
     return translated_sentence, char_probs
+
+
+def translate_crnn(img, model, max_seq_length=128, sos_token=1, eos_token=2):
+    "data: BxCXHxW"
+    model.eval()
+    device = img.device
+
+    with torch.no_grad():
+        outputs = model(img)  # B T V
+        # outputs = outputs.to('cpu')
+
+        probs, preds = outputs.max(2)  # BxT
+
+        # char_probs = np.asarray(probs)
+        # preds_np = np.asarray(preds)
+        char_probs = torch.multiply(probs, preds > 3)
+        char_probs = torch.sum(char_probs, dim=-1) / (char_probs > 0).sum(-1)
+
+        char_probs = char_probs.cpu().numpy()
+        preds = preds.cpu().numpy()
+    return preds, char_probs
 
 
 def build_model(config):

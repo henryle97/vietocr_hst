@@ -15,19 +15,19 @@ class Vgg(nn.Module):
             cnn = models.vgg19_bn(pretrained=pretrained)
 
         pool_idx = 0
-        
+
         for i, layer in enumerate(cnn.features):
-            if isinstance(layer, torch.nn.MaxPool2d):        
+            if isinstance(layer, torch.nn.MaxPool2d):
                 cnn.features[i] = torch.nn.AvgPool2d(kernel_size=ks[pool_idx], stride=ss[pool_idx], padding=0)
                 pool_idx += 1
- 
+
         self.features = cnn.features
         self.dropout = nn.Dropout(dropout)
         self.last_conv_1x1 = nn.Conv2d(512, hidden, 1)
 
     def forward(self, x):
         """
-        Shape: 
+        Shape:
             - x: (N, C, H, W)
             - output: (W, N, C)
         """
@@ -35,6 +35,7 @@ class Vgg(nn.Module):
         conv = self.features(x)
         conv = self.dropout(conv)
         conv = self.last_conv_1x1(conv)    # B*C*H*W
+        print(conv.shape)
         # from IPython import embed; embed()
 
 #        conv = rearrange(conv, 'b d h w -> b d (w h)')

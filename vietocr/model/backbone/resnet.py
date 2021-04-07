@@ -152,7 +152,7 @@ if __name__ == "__main__":
     model = Resnet50(ss, 512)
 
     t1 = time.time()
-    print(model(torch.randn((1,3,32,128))).shape)
+    print(model(torch.randn((1,3,32,1024))).shape)
     print(time.time() - t1)
     print(count_parameters(model))
 

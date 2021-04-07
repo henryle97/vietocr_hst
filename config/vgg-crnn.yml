@@ -1,0 +1,34 @@
+#pretrain:
+#    id_or_url: 1nTKlEog9YFK74kPyX0qLwCWi60_YHHk4
+#    md5: efcabaa6d3adfca8e52bda2fd7d2ee04
+#    cached: /tmp/tranformerorc.pth
+
+# url or local path
+#weights: https://drive.google.com/uc?id=1nTKlEog9YFK74kPyX0qLwCWi60_YHHk4
+
+backbone: vgg_crnn
+cnn:
+    # pooling stride size
+    ss:
+        - [2, 2]
+        - [2, 2]
+        - [2, 1]
+        - [2, 1]
+        - [1, 1]         
+    # pooling kernel size 
+    ks:
+        - [2, 2]
+        - [2, 2]
+        - [2, 1]
+        - [2, 1]
+        - [1, 1]
+    # dim of ouput feature map
+    hidden: 512
+
+seq_modeling: crnn
+transformer:
+    n_hidden: 256
+
+optimizer:
+    max_lr: 0.001
+    pct_start: 0.1

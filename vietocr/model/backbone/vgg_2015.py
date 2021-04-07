@@ -1,24 +1,39 @@
-import torch.nn as nn
-import torch.nn.functional as F
 import torch
+import torch.nn as nn
 
-class BidirectionalLSTM(nn.Module):
+class VGG_FeatureExtractor(nn.Module):
+    """ FeatureExtractor of CRNN (https://arxiv.org/pdf/1507.05717.pdf) """
 
-    def __init__(self, nIn, nHidden, nOut):
-        super(BidirectionalLSTM, self).__init__()
+    def __init__(self, input_channel, output_channel=512):
+        super(VGG_FeatureExtractor, self).__init__()
+        self.output_channel = [int(output_channel / 8), int(output_channel / 4),
+                               int(output_channel / 2), output_channel]  # [64, 128, 256, 512]
+        self.ConvNet = nn.Sequential(
+            nn.Conv2d(input_channel, self.output_channel[0], 3, 1, 1), nn.ReLU(True),
+            nn.MaxPool2d(2, 2),  # 64x16x50
 
-        self.rnn = nn.LSTM(nIn, nHidden, bidirectional=True)
-        self.embedding = nn.Linear(nHidden * 2, nOut)
+            nn.Conv2d(self.output_channel[0], self.output_channel[1], 3, 1, 1), nn.ReLU(True),
+            nn.MaxPool2d(2, 2),  # 128x8x25
+
+            nn.Conv2d(self.output_channel[1], self.output_channel[2], 3, 1, 1), nn.ReLU(True),  # 256x8x25
+            nn.Conv2d(self.output_channel[2], self.output_channel[2], 3, 1, 1), nn.ReLU(True),
+            nn.MaxPool2d((2, 1), (2, 1)),  # 256x4x25
+
+            nn.Conv2d(self.output_channel[2], self.output_channel[3], 3, 1, 1, bias=False),
+            nn.BatchNorm2d(self.output_channel[3]), nn.ReLU(True),  # 512x4x25
+            nn.Conv2d(self.output_channel[3], self.output_channel[3], 3, 1, 1, bias=False),
+            nn.BatchNorm2d(self.output_channel[3]), nn.ReLU(True),
+            nn.MaxPool2d((2, 1), (2, 1)),  # 512x2x25
+
+            nn.Conv2d(self.output_channel[3], self.output_channel[3], 2, 1, 0), nn.ReLU(True))  # 512x1x24
 
     def forward(self, input):
-        recurrent, _ = self.rnn(input)
-        T, b, h = recurrent.size()
-        t_rec = recurrent.view(T * b, h)
-
-        output = self.embedding(t_rec)  # [T * b, nOut]
-        output = output.view(T, b, -1)
-
-        return output
+        features = self.ConvNet(input)
+        features = features.squeeze(2)
+        features = features.permute(2, 0, 1)
+        return features
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
 class CRNN(nn.Module):
@@ -62,33 +77,55 @@ class CRNN(nn.Module):
         convRelu(6, True)  # 512x1x16
 
         self.cnn = cnn
-        self.rnn = nn.Sequential(
-            BidirectionalLSTM(512, nh, nh),
-            BidirectionalLSTM(nh, nh, nclass))
+        # self.rnn = nn.Sequential(
+        #     BidirectionalLSTM(512, nh, nh),
+        #     BidirectionalLSTM(nh, nh, nclass))
 
     def forward(self, input):
         # conv features
         conv = self.cnn(input)
-
-        from IPython import embed; embed()
         b, c, h, w = conv.size()
         assert h == 1, "the height of conv must be 1"
         conv = conv.squeeze(2)
         conv = conv.permute(2, 0, 1)  # [w, b, c]
 
         # rnn features
-        output = self.rnn(conv)
+        # output = self.rnn(conv)
 
         # add log_softmax to converge output
-        output = F.log_softmax(output, dim=2)
+        # output = F.log_softmax(output, dim=2)
 
-        return output
+        return conv
 
     def backward_hook(self, module, grad_input, grad_output):
         for g in grad_input:
             g[g != g] = 0  # replace all nan/inf in gradients to zero
 
-
 if __name__ == "__main__":
-    model = CRNN(32, 3, 10, 256, 2)
-    model(torch.randn((1, 3, 32, 128)))
+    ss = [[2, 2],  # stride size
+          [2, 2],
+          [2, 1],
+          [2, 1],
+          [1, 1]]
+    ks = [[2, 2],  # kernel size
+          [2, 2],
+          [2, 1],
+          [2, 1],
+          [1, 1]]
+    import time
+
+    model = VGG_FeatureExtractor(3, 512)
+    t1 = time.time()
+    print(model(torch.randn((1, 3, 32, 128))).shape)
+    print(time.time() - t1)
+    print(count_parameters(model))
+
+    model = CRNN(32, 3, 50, 256)
+    t1 = time.time()
+    print(model(torch.randn((1, 3, 32, 128))).shape)
+    print(time.time() - t1)
+    print(count_parameters(model))
+
+    # print(model)
+    #
+    # print("Num parameters: ", count_parameters(model))

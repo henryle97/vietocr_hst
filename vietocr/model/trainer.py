@@ -2,7 +2,7 @@ from vietocr.optim.optim import ScheduledOptim
 from vietocr.optim.labelsmoothingloss import LabelSmoothingLoss
 from torch.optim import Adam, SGD, AdamW
 from vietocr.tool.translate import build_model
-from vietocr.tool.translate import translate, batch_translate_beam_search
+from vietocr.tool.translate import translate, batch_translate_beam_search, translate_crnn
 from vietocr.tool.utils import download_weights
 from vietocr.tool.logger import Logger
 from vietocr.loader.aug import ImgAugTransform
@@ -71,10 +71,14 @@ class Trainer():
             self.optimizer = AdamW(lr=0.0001, params=self.model.parameters(), betas=(0.9, 0.98), eps=1e-09)
 
         else:
+
             self.optimizer = AdamW(self.model.parameters(), betas=(0.9, 0.98), eps=1e-09)
             self.scheduler = OneCycleLR(self.optimizer, total_steps=self.num_iters, **config['optimizer'])
 
-        self.criterion = LabelSmoothingLoss(len(self.vocab), padding_idx=self.vocab.pad, smoothing=0.1)
+        if self.model.seq_modeling == 'crnn':
+            self.criterion = torch.nn.CTCLoss(self.vocab.pad)
+        else:
+            self.criterion = LabelSmoothingLoss(len(self.vocab), padding_idx=self.vocab.pad, smoothing=0.1)
 
 
 
@@ -201,12 +205,14 @@ class Trainer():
         for idx, batch in enumerate(self.valid_gen):
             batch = self.batch_to_device(batch)
 
-            if self.beamsearch:
-                translated_sentence = batch_translate_beam_search(batch['img'], self.model)
-                prob = None
+            if self.model.seq_modeling != 'crnn':
+                if self.beamsearch:
+                    translated_sentence = batch_translate_beam_search(batch['img'], self.model)
+                    prob = None
+                else:
+                    translated_sentence, prob = translate(batch['img'], self.model)
             else:
-                translated_sentence, prob = translate(batch['img'], self.model)
-
+                translated_sentence, prob = translate_crnn(batch['img'], self.model)
             pred_sent = self.vocab.batch_decode(translated_sentence.tolist())
             actual_sent = self.vocab.batch_decode(batch['tgt_output'].tolist())
             pred_sents.extend(pred_sent)
