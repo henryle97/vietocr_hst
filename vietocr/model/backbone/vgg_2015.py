@@ -102,8 +102,8 @@ class CRNN(nn.Module):
         for g in grad_input:
             g[g != g] = 0  # replace all nan/inf in gradients to zero
 
-def vgg_2015(ss, hidden):
-    return VGG_FeatureExtractor(3, hidden)
+def vgg_2015(n_channel_img, hidden):
+    return VGG_FeatureExtractor(n_channel_img, hidden)
 
 if __name__ == "__main__":
     ss = [[2, 2],  # stride size

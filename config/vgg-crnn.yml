@@ -8,20 +8,7 @@
 
 backbone: vgg_crnn
 cnn:
-    # pooling stride size
-    ss:
-        - [2, 2]
-        - [2, 2]
-        - [2, 1]
-        - [2, 1]
-        - [1, 1]         
-    # pooling kernel size 
-    ks:
-        - [2, 2]
-        - [2, 2]
-        - [2, 1]
-        - [2, 1]
-        - [1, 1]
+    n_channel_img: 3
     # dim of ouput feature map
     hidden: 512
 
