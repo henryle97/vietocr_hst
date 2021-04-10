@@ -35,7 +35,7 @@ class Vgg(nn.Module):
         conv = self.features(x)
         conv = self.dropout(conv)
         conv = self.last_conv_1x1(conv)    # B*C*H*W
-        print(conv.shape)
+        # print(conv.shape)
         # from IPython import embed; embed()
 
 #        conv = rearrange(conv, 'b d h w -> b d (w h)')
