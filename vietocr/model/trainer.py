@@ -13,6 +13,8 @@ import os
 import matplotlib.pyplot as plt
 import time
 from torch.utils.tensorboard import SummaryWriter
+from vietocr.tool.config import Cfg
+
 
 
 class Trainer():
@@ -96,6 +98,13 @@ class Trainer():
         self.train_losses = []
         print("\nNumber batch samples of training: ", len(self.train_gen))
         print("Number batch samples of valid: ", len(self.valid_gen))
+
+        config_savepath = os.path.join(self.tensorboard_dir, "/config.yml")
+        if not os.path.exists(config_savepath):
+            print("Saving config file at: ", config_savepath)
+            Cfg(config).save(config_savepath)
+
+
         
     def train(self):
         total_loss = 0
