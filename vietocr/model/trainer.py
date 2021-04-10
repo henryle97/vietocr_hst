@@ -99,7 +99,7 @@ class Trainer():
         print("\nNumber batch samples of training: ", len(self.train_gen))
         print("Number batch samples of valid: ", len(self.valid_gen))
 
-        config_savepath = os.path.join(self.tensorboard_dir, "/config.yml")
+        config_savepath = os.path.join(self.tensorboard_dir, "config.yml")
         if not os.path.exists(config_savepath):
             print("Saving config file at: ", config_savepath)
             Cfg(config).save(config_savepath)
