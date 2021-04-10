@@ -17,7 +17,8 @@ Task 1: Handwriting recognition
 
 
 2. Training 5k real:
-    - Iter: 50000 :
+    - Seq2Seq:
+        + Iter: 50000 :
         + OneCycleLR: MAX_LR=3e-4,pct_start=0.1
         + WER=0.1081
 
@@ -27,5 +28,19 @@ Task 1: Handwriting recognition
         + 120k iter
         + Lr :3e-4, onecycle
         + gpu time: 20s/100iter
+        + WER: 0.1069
+
+    - CRNN (8/4)
+        + sever .48
+        + 300k iter
+        + WER = 0.144
+        + Finetuning: 200k iter  (lr = 0.00003)
+            + WER = ?
+
+
+
+3. Tip:
++ Word: fixed length width
++ Line: variable length width
 
 

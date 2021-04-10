@@ -123,14 +123,13 @@ def translate_crnn(img, model, max_seq_length=128, sos_token=1, eos_token=2):
     device = img.device
 
     with torch.no_grad():
-        outputs = model(img, None, None)  # B T V
+        outputs = model(img, None, None)  # T B V
+        outputs = outputs.permute(1, 0, 2)  # BxTxV
         # outputs = outputs.to('cpu')
 
         probs, preds = outputs.max(2)  # BxT
 
-        # char_probs = np.asarray(probs)
-        # preds_np = np.asarray(preds)
-        char_probs = torch.multiply(probs, preds > 3)
+        char_probs = torch.multiply(probs, preds > 3)   # exclude <pad> <sos> <eos> <*>
         char_probs = torch.sum(char_probs, dim=-1) / (char_probs > 0).sum(-1)
 
         char_probs = char_probs.cpu().numpy()

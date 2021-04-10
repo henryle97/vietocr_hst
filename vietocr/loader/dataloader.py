@@ -169,8 +169,7 @@ class Collator(object):
             label = sample['word']
             label_len = len(label)
             len_text.append(label_len)
-            
-            
+
             tgt = np.concatenate((
                 label,
                 np.zeros(max_label_len - label_len, dtype=np.int32)))   # 0: pad
@@ -183,7 +182,6 @@ class Collator(object):
                 np.zeros(max_label_len - one_mask_len,dtype=np.float32))))
             
         img = np.array(img, dtype=np.float32)
-
 
         tgt_input = np.array(tgt_input, dtype=np.int64).T
         tgt_output = np.roll(tgt_input, -1, 0).T

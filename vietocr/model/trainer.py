@@ -1,16 +1,12 @@
-from vietocr.optim.optim import ScheduledOptim
 from vietocr.optim.labelsmoothingloss import LabelSmoothingLoss
-from torch.optim import Adam, SGD, AdamW
+from torch.optim import AdamW
 from vietocr.tool.translate import build_model
 from vietocr.tool.translate import translate, batch_translate_beam_search, translate_crnn
-from vietocr.tool.utils import download_weights
-from vietocr.tool.logger import Logger
 from vietocr.loader.aug import ImgAugTransform
 import torch
 from vietocr.loader.dataloader import OCRDataset, ClusterRandomSampler, Collator
 from torch.utils.data import DataLoader
-from torch.optim.lr_scheduler import CosineAnnealingLR, CyclicLR, OneCycleLR
-
+from torch.optim.lr_scheduler import OneCycleLR
 from vietocr.tool.utils import compute_accuracy
 import numpy as np
 import os
@@ -52,14 +48,6 @@ class Trainer():
             os.makedirs(self.tensorboard_dir, exist_ok=True)
         self.writer = SummaryWriter(self.tensorboard_dir)
 
-        # if pretrained:
-        #     print("Loading pretrained weight...")
-        #     weight_file = download_weights(**config['pretrain'], quiet=config['quiet'])
-        #     self.load_weights(weight_file)
-        if config['trainer']['pretrained']:
-
-            self.load_weights(config['trainer']['pretrained'])
-            print("Loaded trained model from: {}".format(config['trainer']['pretrained']))
 
         self.iter = 0
         self.best_acc = 0
@@ -80,10 +68,13 @@ class Trainer():
         else:
             self.criterion = LabelSmoothingLoss(len(self.vocab), padding_idx=self.vocab.pad, smoothing=0.1)
 
-
+        # Pretrained model
+        if config['trainer']['pretrained']:
+            self.load_weights(config['trainer']['pretrained'])
+            print("Loaded trained model from: {}".format(config['trainer']['pretrained']))
 
         # Resume
-        if config['trainer']['resume_from']:
+        elif config['trainer']['resume_from']:
             self.load_checkpoint(config['trainer']['resume_from'])
             for state in self.optimizer.state.values():
                 for k, v in state.items():
@@ -218,9 +209,11 @@ class Trainer():
                     prob = None
                 else:
                     translated_sentence, prob = translate(batch['img'], self.model)
+                pred_sent = self.vocab.batch_decode(translated_sentence.tolist())
             else:
                 translated_sentence, prob = translate_crnn(batch['img'], self.model)
-            pred_sent = self.vocab.batch_decode(translated_sentence.tolist())
+                pred_sent = self.vocab.batch_decode(translated_sentence.tolist(), crnn=True)
+
             actual_sent = self.vocab.batch_decode(batch['tgt_output'].tolist())
             pred_sents.extend(pred_sent)
             actual_sents.extend(actual_sent)
@@ -351,21 +344,29 @@ class Trainer():
 
     def load_weights(self, filename):
         state_dict = torch.load(filename, map_location=torch.device(self.device))
+        if self.is_checkpoint(state_dict):
+            self.model.load_state_dict(state_dict['state_dict'])
+        else:
 
-        for name, param in self.model.named_parameters():
-            if name not in state_dict:
-                print('{} not found'.format(name))
-            elif state_dict[name].shape != param.shape:
-                print('{} missmatching shape, required {} but found {}'.format(name, param.shape, state_dict[name].shape))
-                del state_dict[name]
-
-        self.model.load_state_dict(state_dict, strict=False)
+            for name, param in self.model.named_parameters():
+                if name not in state_dict:
+                    print('{} not found'.format(name))
+                elif state_dict[name].shape != param.shape:
+                    print('{} missmatching shape, required {} but found {}'.format(name, param.shape, state_dict[name].shape))
+                    del state_dict[name]
+            self.model.load_state_dict(state_dict, strict=False)
 
     def save_weights(self, filename):
         path, _ = os.path.split(filename)
         os.makedirs(path, exist_ok=True)
        
         torch.save(self.model.state_dict(), filename)
+
+    def is_checkpoint(self, checkpoint):
+        if len(checkpoint.keys()) > 1:
+            return True
+        else:
+            return False
 
     def batch_to_device(self, batch):
         img = batch['img'].to(self.device, non_blocking=True)
