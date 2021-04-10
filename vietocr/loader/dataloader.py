@@ -68,9 +68,9 @@ class OCRDataset(Dataset):
         for i in pbar:
             bucket = self.get_bucket(i)
             self.cluster_indices[bucket].append(i)
-        for width_key, ids_list in self.cluster_indices:
+        for width_key, ids_list in self.cluster_indices.items():
             if len(ids_list) < batch_size:
-                self.nSamples = self.nSamples - len(ids_list) + batch_size
+                # self.nSamples = self.nSamples - len(ids_list) + batch_size
                 self.cluster_indices[width_key] = random.choices(ids_list, k=batch_size)
             else:
                 continue
@@ -144,12 +144,8 @@ class ClusterRandomSampler(Sampler):
     def __init__(self, data_source, batch_size, shuffle=True):
         self.data_source = data_source
         self.batch_size = batch_size
-        self.shuffle = shuffle        
+        self.shuffle = shuffle
 
-    def flatten_list(self, lst):
-        return [item for sublist in lst for item in sublist]
-
-    def __iter__(self):
         batch_lists = []
         for cluster, cluster_indices in self.data_source.cluster_indices.items():
             if self.shuffle:
@@ -161,18 +157,28 @@ class ClusterRandomSampler(Sampler):
             if self.shuffle:
                 random.shuffle(batches)
 
-            batch_lists.append(batches)
+            batch_lists.append(batches)   # [[b1,b2], [b3,b4],..]
 
-        lst = self.flatten_list(batch_lists)
+        # flatten lists and shuffle the batches if necessary
+        # this works on batch level
+        lst = self.flatten_list(batch_lists)  # [b1, b2, b3,...]
         if self.shuffle:
             random.shuffle(lst)
 
-        lst = self.flatten_list(lst)
+        self.lst = lst
 
-        return iter(lst)
+    def flatten_list(self, lst):
+        return [item for sublist in lst for item in sublist]
+
+    def __iter__(self):
+        if self.shuffle:
+            random.shuffle(self.lst)
+
+        return iter(self.flatten_list(self.lst))   # [id1, id2,...]
 
     def __len__(self):
-        return len(self.data_source)
+        return len(self.flatten_list(self.lst))
+
 
 class Collator(object):
     def __init__(self, masked_language_model=True):
