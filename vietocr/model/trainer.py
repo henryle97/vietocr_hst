@@ -390,7 +390,8 @@ class Trainer():
                 image_height=self.config['dataset']['image_height'], 
                 image_min_width=self.config['dataset']['image_min_width'], 
                 image_max_width=self.config['dataset']['image_max_width'],
-                             separate=self.config['dataset']['separate'])
+                             separate=self.config['dataset']['separate'],
+                             batch_size=self.batch_size)
 
         sampler = ClusterRandomSampler(dataset, self.batch_size, True)
         collate_fn = Collator(masked_language_model)

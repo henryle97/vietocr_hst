@@ -21,7 +21,7 @@ from vietocr.tool.translate import resize
 
 class OCRDataset(Dataset):
     def __init__(self, lmdb_path, root_dir, annotation_path, vocab, image_height=32, image_min_width=32, image_max_width=512, transform=None,
-                 separate='\t'):
+                 separate='\t', batch_size=32):
         self.root_dir = root_dir
         self.annotation_path = os.path.join(root_dir, annotation_path)
         self.vocab = vocab
@@ -51,9 +51,14 @@ class OCRDataset(Dataset):
         nSamples = int(self.txn.get('num-samples'.encode()))
         self.nSamples = nSamples
 
-        self.build_cluster_indices()
+        self.build_cluster_indices(batch_size)
 
-    def build_cluster_indices(self):
+    def build_cluster_indices(self, batch_size):
+        """
+
+        Returns:
+
+        """
         self.cluster_indices = defaultdict(list)
 
         pbar = tqdm(range(self.__len__()), 
@@ -63,9 +68,25 @@ class OCRDataset(Dataset):
         for i in pbar:
             bucket = self.get_bucket(i)
             self.cluster_indices[bucket].append(i)
+        for width_key, ids_list in self.cluster_indices:
+            if len(ids_list) < batch_size:
+                self.nSamples = self.nSamples - len(ids_list) + batch_size
+                self.cluster_indices[width_key] = random.choices(ids_list, k=batch_size)
+            else:
+                continue
+
 
     
     def get_bucket(self, idx):
+        """
+        Get width of image after resize
+
+        Args:
+            idx: index of image
+
+        Returns:
+            new_w: new width
+        """
         key = 'dim-%09d'%idx
 
         dim_img = self.txn.get(key.encode())
@@ -135,6 +156,7 @@ class ClusterRandomSampler(Sampler):
                 random.shuffle(cluster_indices)
 
             batches = [cluster_indices[i:i + self.batch_size] for i in range(0, len(cluster_indices), self.batch_size)]
+
             batches = [_ for _ in batches if len(_) == self.batch_size]
             if self.shuffle:
                 random.shuffle(batches)
