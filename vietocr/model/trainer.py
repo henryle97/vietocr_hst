@@ -180,8 +180,6 @@ class Trainer():
 
                 outputs = self.model(img, tgt_input, tgt_padding_mask)
 #                loss = self.criterion(rearrange(outputs, 'b t v -> (b t) v'), rearrange(tgt_output, 'b o -> (b o)'))
-               
-
 
                 if self.model.seq_modeling == 'crnn':
                     length = batch['labels_len']
@@ -263,14 +261,16 @@ class Trainer():
 
         return pred_sents, actual_sents, img_files, probs_sents, imgs_sents
 
-    def precision(self, sample=None):
-
+    def precision(self, sample=None, measure_time=True):
+        t1 = time.time()
         pred_sents, actual_sents, _, _, _ = self.predict(sample=sample)
 
         acc_full_seq = compute_accuracy(actual_sents, pred_sents, mode='full_sequence')
         acc_per_char = compute_accuracy(actual_sents, pred_sents, mode='per_char')
         wer = compute_accuracy(actual_sents, pred_sents, mode='wer')
 
+        if measure_time:
+            print("Time: ", time.time() - t1)
         return acc_full_seq, acc_per_char, wer
     
     def visualize_prediction(self, sample=16, errorcase=False, fontname='serif', fontsize=16):
@@ -372,10 +372,12 @@ class Trainer():
         torch.save(self.model.state_dict(), filename)
 
     def is_checkpoint(self, checkpoint):
-        if len(checkpoint.keys()) > 1:
-            return True
-        else:
+        try:
+            checkpoint['state_dict']
+        except:
             return False
+        else:
+            return True
 
     def batch_to_device(self, batch):
         img = batch['img'].to(self.device, non_blocking=True)
