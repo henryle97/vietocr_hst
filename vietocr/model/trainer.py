@@ -270,7 +270,7 @@ class Trainer():
         wer = compute_accuracy(actual_sents, pred_sents, mode='wer')
 
         if measure_time:
-            print("Time: ", time.time() - t1)
+            print("Time: {:.4f}".format((time.time() - t1) / len(actual_sents)))
         return acc_full_seq, acc_per_char, wer
     
     def visualize_prediction(self, sample=16, errorcase=False, fontname='serif', fontsize=16):

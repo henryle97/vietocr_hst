@@ -69,9 +69,11 @@ class OCRDataset(Dataset):
             bucket = self.get_bucket(i)
             self.cluster_indices[bucket].append(i)
         for width_key, ids_list in self.cluster_indices.items():
-            if len(ids_list) < batch_size:
+            length_ids = len(ids_list)
+            if length_ids < batch_size:
                 # self.nSamples = self.nSamples - len(ids_list) + batch_size
-                self.cluster_indices[width_key] = random.choices(ids_list, k=batch_size)
+                # self.cluster_indices[width_key] = random.choices(ids_list, k=batch_size)
+                self.cluster_indices[width_key] = ids_list + ids_list[:batch_size - length_ids]
             else:
                 continue
 
