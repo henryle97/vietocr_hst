@@ -110,7 +110,7 @@ def save_predictions(csv_file, preds, groud_truths, img_filenames):
         'preds': preds,
         'ground_truth': groud_truths,
     })
-    df.to_csv(csv_file, index=False, sep="||||")
+    df.to_csv(csv_file, index=False)
 
 
 
