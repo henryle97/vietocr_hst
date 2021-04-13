@@ -5,6 +5,7 @@ import numpy as np
 import uuid
 import requests
 import jiwer
+import pandas as pd
 
 def download_weights(id_or_url, cached=None, md5=None, quiet=False):
     if id_or_url.startswith('http'):
@@ -88,6 +89,26 @@ def compute_accuracy(ground_truth, predictions, mode='full_sequence'):
 
     return avg_accuracy
 
+
+def save_predictions(csv_file, preds, groud_truths, img_filenames):
+    """
+    Save predictions to csv file
+    Args:
+        csv_file:
+        preds: list
+        groud_truth: list
+        img_filenames: list
+
+    Returns:
+
+    """
+    assert len(preds) == len(groud_truths) and len(preds) == len(img_filenames)
+    df = pd.DataFrame({
+        'id': img_filenames,
+        'preds': preds,
+        'ground_truth': groud_truths,
+    })
+    df.to_csv(csv_file, index=False)
 
 
 

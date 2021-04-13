@@ -7,13 +7,14 @@ import torch
 from vietocr.loader.dataloader import OCRDataset, ClusterRandomSampler, Collator
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import OneCycleLR
-from vietocr.tool.utils import compute_accuracy
+from vietocr.tool.utils import compute_accuracy, save_predictions
 import numpy as np
 import os
 import matplotlib.pyplot as plt
 import time
 from torch.utils.tensorboard import SummaryWriter
 from vietocr.tool.config import Cfg
+import pandas as pd
 
 
 
@@ -264,13 +265,15 @@ class Trainer():
     def precision(self, sample=None, measure_time=True):
         t1 = time.time()
         pred_sents, actual_sents, _, _, _ = self.predict(sample=sample)
+        time_predict = time.time() - t1
 
         acc_full_seq = compute_accuracy(actual_sents, pred_sents, mode='full_sequence')
         acc_per_char = compute_accuracy(actual_sents, pred_sents, mode='per_char')
         wer = compute_accuracy(actual_sents, pred_sents, mode='wer')
 
+
         if measure_time:
-            print("Time: {:.4f}".format((time.time() - t1) / len(actual_sents)))
+            print("Time: {:.4f}".format(time_predict / len(actual_sents)))
         return acc_full_seq, acc_per_char, wer
     
     def visualize_prediction(self, sample=16, errorcase=False, fontname='serif', fontsize=16):
@@ -306,7 +309,11 @@ class Trainer():
             plt.axis('off')
 
         plt.show()
-    
+
+    def log_prediction(self, sample=16, csv_file='model.csv'):
+        pred_sents, actual_sents, img_files, probs, imgs = self.predict(sample)
+        save_predictions(csv_file, pred_sents, actual_sents, img_files)
+
     def visualize_dataset(self, sample=16, fontname='serif'):
         n = 0
         for batch in self.train_gen:
