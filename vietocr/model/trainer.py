@@ -227,7 +227,7 @@ class Trainer():
             actual_sents.extend(actual_sent)
 
             imgs_sents.extend(batch['img'])
-            # img_files.extend(batch['filenames'])
+            img_files.extend(batch['filenames'])
             probs_sents.extend(prob)
 
 
