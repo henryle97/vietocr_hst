@@ -102,7 +102,9 @@ def save_predictions(csv_file, preds, groud_truths, img_filenames):
     Returns:
 
     """
-    assert len(preds) == len(groud_truths) and len(preds) == len(img_filenames)
+    assert len(preds) == len(groud_truths) and len(preds) == len(img_filenames), \
+        "should be same size: {}, {}, {}".format(len(preds), len(groud_truths), len(img_filenames))
+
     df = pd.DataFrame({
         'id': img_filenames,
         'preds': preds,
