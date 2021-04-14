@@ -21,7 +21,7 @@ from vietocr.tool.translate import resize
 
 class OCRDataset(Dataset):
     def __init__(self, lmdb_path, root_dir, annotation_path, vocab, image_height=32, image_min_width=32, image_max_width=512, transform=None,
-                 separate='\t', batch_size=32):
+                 separate='\t', batch_size=32, is_padding=False):
         self.root_dir = root_dir
         self.annotation_path = os.path.join(root_dir, annotation_path)
         self.vocab = vocab
@@ -30,6 +30,7 @@ class OCRDataset(Dataset):
         self.image_height = image_height
         self.image_min_width = image_min_width
         self.image_max_width = image_max_width
+        self.is_padding = is_padding
 
         self.lmdb_path = lmdb_path
 
@@ -123,7 +124,7 @@ class OCRDataset(Dataset):
         if self.transform:
             img = self.transform(img)
 
-        img_bw = process_image(img, self.image_height, self.image_min_width, self.image_max_width)
+        img_bw = process_image(img, self.image_height, self.image_min_width, self.image_max_width, is_padding=self.is_padding)
             
         word = self.vocab.encode(label)
 

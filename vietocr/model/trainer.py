@@ -1,3 +1,5 @@
+import tqdm
+
 from vietocr.optim.labelsmoothingloss import LabelSmoothingLoss
 from torch.optim import AdamW
 from vietocr.tool.translate import build_model
@@ -40,6 +42,7 @@ class Trainer():
         self.image_aug = config['aug']['image_aug']
         self.masked_language_model = config['aug']['masked_language_model']
         self.metrics = config['trainer']['metrics']
+        self.is_padding = config['dataset']['is_padding']
 
         # LOGGER
         # logger = config['trainer']['log']
@@ -208,7 +211,7 @@ class Trainer():
         probs_sents = []
         imgs_sents = []
 
-        for idx, batch in enumerate(self.valid_gen):
+        for idx, batch in enumerate(tqdm.tqdm(self.valid_gen)):
             batch = self.batch_to_device(batch)
 
             if self.model.seq_modeling != 'crnn':
@@ -409,9 +412,13 @@ class Trainer():
                 image_min_width=self.config['dataset']['image_min_width'], 
                 image_max_width=self.config['dataset']['image_max_width'],
                              separate=self.config['dataset']['separate'],
-                             batch_size=self.batch_size)
+                             batch_size=self.batch_size,
+                             is_padding=self.is_padding)
+        if self.is_padding:
+            sampler = None
+        else:
+            sampler = ClusterRandomSampler(dataset, self.batch_size, True)
 
-        sampler = ClusterRandomSampler(dataset, self.batch_size, True)
         collate_fn = Collator(masked_language_model)
 
         gen = DataLoader(
@@ -419,7 +426,7 @@ class Trainer():
                 batch_size=self.batch_size, 
                 sampler=sampler,
                 collate_fn = collate_fn,
-                shuffle=False,
+                shuffle= self.is_padding,
                 drop_last=False,
                 **self.config['dataloader'])
        

@@ -160,17 +160,34 @@ def resize(w, h, expected_height, image_min_width, image_max_width):
 
     return new_w, expected_height
 
-def process_image(image, image_height, image_min_width, image_max_width):
+def process_image(image, image_height, image_min_width, image_max_width, is_padding=False):
     img = image.convert('RGB')
 
     w, h = img.size
-    new_w, image_height = resize(w, h, image_height, image_min_width, image_max_width)
+    if not is_padding:
+        new_w, image_height = resize(w, h, image_height, image_min_width, image_max_width)
 
-    img = img.resize((new_w, image_height), Image.ANTIALIAS)
+        img = img.resize((new_w, image_height), Image.ANTIALIAS)
+    else:
+        new_w = int(image_height * float(w) / float(h))
+
+        if new_w < image_max_width:
+            # padd
+            # w_pad = image_width - new_w
+            new_img = Image.new('RGB', (image_max_width, image_height), 255)   # padding white
+            new_img.paste(img, box=(0, 0))
+            img = new_img
+
+        elif new_w > image_max_width:
+            # resize
+            img = img.resize((image_max_width, image_height), Image.ANTIALIAS)
 
     img = np.asarray(img).transpose(2,0, 1)   # CxWxH
     img = img/255
     return img
+
+
+
 
 def process_input(image, image_height, image_min_width, image_max_width):
     img = process_image(image, image_height, image_min_width, image_max_width)
