@@ -1,0 +1,16 @@
+
+
+Phase 1: 15/4/2021
+    - Dataset: VNonDB-word: 85k train/25k valid / 3k test
+
+    - Model: Vgg-seq2seq
+        - Result:
+            + iter 300k: val: 92.28% / WER=7.7 - test: 38.26%  / WER=61.73
+
+    - Model: CRNN:
+        - Result:
+            + iter 300k: val: 87.65% / WER=12.34 - test: 29.63% / WER=70.36
+
+
+TODO:
+    1. Synth word data

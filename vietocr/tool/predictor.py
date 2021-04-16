@@ -9,7 +9,6 @@ class Predictor():
         device = config['device']
         
         model, vocab = build_model(config)
-        weights = '/tmp/weights.pth'
 
         if config['weights'].startswith('http'):
             weights = download_weights(config['weights'])
@@ -24,7 +23,7 @@ class Predictor():
         
     def predict(self, img, return_prob=False):
         img = process_input(img, self.config['dataset']['image_height'], 
-                self.config['dataset']['image_min_width'], self.config['dataset']['image_max_width'])        
+                self.config['dataset']['image_min_width'], self.config['dataset']['image_max_width'], is_padding=self.config['dataset']['is_padding'])
         img = img.to(self.config['device'])
 
         if self.config['predictor']['beamsearch']:
@@ -42,3 +41,8 @@ class Predictor():
             return s, prob
         else:
             return s
+
+
+
+
+

@@ -39,7 +39,7 @@ def count_parameters(model):
 
 class CRNN(nn.Module):
 
-    def __init__(self, imgH, nc, nclass, nh, n_rnn=2, leakyRelu=False):
+    def __init__(self, nc, nh, imgH=32, n_rnn=2, leakyRelu=False):
         super(CRNN, self).__init__()
         assert imgH % 16 == 0, 'imgH has to be a multiple of 16'
 
@@ -103,8 +103,8 @@ class CRNN(nn.Module):
             g[g != g] = 0  # replace all nan/inf in gradients to zero
 
 def vgg_2015(n_channel_img, hidden):
-    return VGG_FeatureExtractor(n_channel_img, hidden)
-
+    # return VGG_FeatureExtractor(n_channel_img, hidden)
+    return CRNN(n_channel_img, hidden)
 if __name__ == "__main__":
     ss = [[2, 2],  # stride size
           [2, 2],

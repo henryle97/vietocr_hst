@@ -1,7 +1,9 @@
+import math
+
 import tqdm
 
 from vietocr.optim.labelsmoothingloss import LabelSmoothingLoss
-from torch.optim import AdamW
+from torch.optim import AdamW, Adam
 from vietocr.tool.translate import build_model
 from vietocr.tool.translate import translate, batch_translate_beam_search, translate_crnn
 from vietocr.loader.aug import ImgAugTransform
@@ -62,7 +64,10 @@ class Trainer():
         self.is_finetuning = config['trainer']['is_finetuning']
         if self.is_finetuning:
             print("Finetuning model ---->")
-            self.optimizer = AdamW(lr=0.0001, params=self.model.parameters(), betas=(0.9, 0.98), eps=1e-09)
+            if self.model.seq_modeling == 'crnn':
+                self.optimizer = Adam(lr=0.0001, params=self.model.parameters(), betas=(0.5, 0.999))
+            else:
+                self.optimizer = AdamW(lr=0.0001, params=self.model.parameters(), betas=(0.9, 0.98), eps=1e-09)
 
         else:
 
@@ -278,9 +283,9 @@ class Trainer():
         if measure_time:
             print("Time: {:.4f}".format(time_predict / len(actual_sents)))
         return acc_full_seq, acc_per_char, wer
-    
-    def visualize_prediction(self, sample=16, errorcase=False, fontname='serif', fontsize=16):
-        
+
+    def visualize_prediction(self, sample=16, errorcase=False, fontname='serif', fontsize=16, save_fig=False):
+
         pred_sents, actual_sents, img_files, probs, imgs = self.predict(sample)
 
         if errorcase:
@@ -293,46 +298,64 @@ class Trainer():
             actual_sents = [actual_sents[i] for i in wrongs]
             img_files = [img_files[i] for i in wrongs]
             probs = [probs[i] for i in wrongs]
+            imgs = [imgs[i] for i in wrongs]
 
         img_files = img_files[:sample]
 
         fontdict = {
-                'family':fontname,
-                'size':fontsize
-                } 
+            'family': fontname,
+            'size': fontsize
+        }
+        ncols = 5
+        nrows = int(math.ceil(len(img_files) / ncols))
+        fig, ax = plt.subplots(nrows, ncols, figsize=(12, 8))
 
         for vis_idx in range(0, len(img_files)):
+            row = vis_idx // ncols
+            col = vis_idx % ncols
+
             pred_sent = pred_sents[vis_idx]
             actual_sent = actual_sents[vis_idx]
             prob = probs[vis_idx]
             img = imgs[vis_idx].permute(1, 2, 0).cpu().detach().numpy()
-            plt.figure()
-            plt.imshow(img)
-            plt.title('pred: {} || prob: {:.3f} \n actual: {}'.format(pred_sent, prob, actual_sent), loc='left', fontdict=fontdict)
-            plt.axis('off')
 
+            ax[row, col].imshow(img)
+            ax[row, col].set_title("Pred: {: <2} \n Actual: {}".format(pred_sent, actual_sent), fontname=fontname, color='r' if pred_sent != actual_sent else 'g')
+            ax[row, col].get_xaxis().set_ticks([])
+            ax[row, col].get_yaxis().set_ticks([])
+
+        plt.subplots_adjust()
+        if save_fig:
+            fig.savefig('vis_prediction.png')
         plt.show()
 
     def log_prediction(self, sample=16, csv_file='model.csv'):
         pred_sents, actual_sents, img_files, probs, imgs = self.predict(sample)
         save_predictions(csv_file, pred_sents, actual_sents, img_files)
 
-    def visualize_dataset(self, sample=16, fontname='serif'):
+    def vis_data(self, sample=16):
+        ncols=4
+        nrows = sample // ncols
+        fig, ax = plt.subplots(nrows=nrows, ncols=ncols)
         n = 0
         for batch in self.train_gen:
             for i in range(self.batch_size):
+                row = n // ncols
+                col = n % ncols
                 img = batch['img'][i].numpy().transpose(1, 2, 0)
                 sent = self.vocab.decode(batch['tgt_input'].T[i].tolist())
-                
-                plt.figure()
-                plt.title('sent: {}'.format(sent), loc='center', fontname=fontname)
-                plt.imshow(img)
-                plt.axis('off')
-                
-                n += 1
+
+                ax[row, col].imshow(img)
+                ax[row, col].set_title(sent)
+                ax[row, col].get_xaxis().set_ticks([])
+                ax[row, col].get_yaxis().set_ticks([])
+
+                n+=1
                 if n >= sample:
-                    plt.show()
                     return
+
+        fig.savefig('dataset.png')
+
 
 
     def load_checkpoint(self, filename):
@@ -426,8 +449,8 @@ class Trainer():
                 batch_size=self.batch_size, 
                 sampler=sampler,
                 collate_fn = collate_fn,
-                shuffle= self.is_padding,
-                drop_last=False,
+                shuffle= self.is_padding and 'train' in lmdb_path,
+                drop_last=self.model.seq_modeling == 'crnn',
                 **self.config['dataloader'])
        
         return gen

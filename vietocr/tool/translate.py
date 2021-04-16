@@ -172,13 +172,14 @@ def process_image(image, image_height, image_min_width, image_max_width, is_padd
         new_w = int(image_height * float(w) / float(h))
 
         if new_w < image_max_width:
-            # padd
-            # w_pad = image_width - new_w
-            new_img = Image.new('RGB', (image_max_width, image_height), 255)   # padding white
-            new_img.paste(img, box=(0, 0))
+            img = img.resize((new_w, image_height), Image.ANTIALIAS)
+            box_center = ((image_max_width - new_w) // 2, 0)
+
+            new_img = Image.new('RGB', (image_max_width, image_height), 'white')  # padding white
+            new_img.paste(img, box=box_center)
             img = new_img
 
-        elif new_w > image_max_width:
+        else:
             # resize
             img = img.resize((image_max_width, image_height), Image.ANTIALIAS)
 
@@ -189,8 +190,8 @@ def process_image(image, image_height, image_min_width, image_max_width, is_padd
 
 
 
-def process_input(image, image_height, image_min_width, image_max_width):
-    img = process_image(image, image_height, image_min_width, image_max_width)
+def process_input(image, image_height, image_min_width, image_max_width, is_padding=False):
+    img = process_image(image, image_height, image_min_width, image_max_width, is_padding=is_padding)
     img = img[np.newaxis, ...]
     img = torch.FloatTensor(img)
     return img
