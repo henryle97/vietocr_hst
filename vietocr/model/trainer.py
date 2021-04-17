@@ -35,6 +35,8 @@ class Trainer():
         self.data_root = config['dataset']['data_root']
         self.train_annotation = config['dataset']['train_annotation']
         self.valid_annotation = config['dataset']['valid_annotation']
+        self.train_lmdb = config['dataset']['train_lmdb']
+        self.valid_lmdb = config['dataset']['valid_lmdb']
         self.dataset_name = config['dataset']['name']
 
         self.batch_size = config['trainer']['batch_size']
@@ -94,14 +96,19 @@ class Trainer():
 
             print("Resume from {}".format(config['trainer']['resume_from']))
 
+
+        # DATASET
         transforms = None
         if self.image_aug:
             transforms = augmentor
 
-        self.train_gen = self.data_gen(self.data_root + "/" + 'train_{}'.format(self.dataset_name),
-                self.data_root, self.train_annotation, self.masked_language_model, transform=transforms)
+        train_lmdb_paths = [os.path.join(self.data_root, lmdb_path) for lmdb_path in self.train_lmdb]
+
+        self.train_gen = self.data_gen(lmdb_paths=train_lmdb_paths,
+                data_root=self.data_root, annotation=self.train_annotation, masked_language_model=self.masked_language_model, transform=transforms)
+
         if self.valid_annotation:
-            self.valid_gen = self.data_gen(self.data_root + "/" + 'valid_{}'.format(self.dataset_name),
+            self.valid_gen = self.data_gen(self.data_root + "/" + self.valid_lmdb,
                     self.data_root, self.valid_annotation, masked_language_model=False)
 
         self.train_losses = []
@@ -427,16 +434,22 @@ class Trainer():
 
         return batch
 
-    def data_gen(self, lmdb_path, data_root, annotation, masked_language_model=True, transform=None):
-        dataset = OCRDataset(lmdb_path=lmdb_path, 
-                root_dir=data_root, annotation_path=annotation, 
-                vocab=self.vocab, transform=transform, 
-                image_height=self.config['dataset']['image_height'], 
-                image_min_width=self.config['dataset']['image_min_width'], 
-                image_max_width=self.config['dataset']['image_max_width'],
-                             separate=self.config['dataset']['separate'],
-                             batch_size=self.batch_size,
-                             is_padding=self.is_padding)
+    def data_gen(self, lmdb_paths, data_root, annotation, masked_language_model=True, transform=None):
+        datasets = []
+        for lmdb_path in lmdb_paths:
+            dataset = OCRDataset(lmdb_path=lmdb_path,
+                    root_dir=data_root, annotation_path=annotation,
+                    vocab=self.vocab, transform=transform,
+                    image_height=self.config['dataset']['image_height'],
+                    image_min_width=self.config['dataset']['image_min_width'],
+                    image_max_width=self.config['dataset']['image_max_width'],
+                                 separate=self.config['dataset']['separate'],
+                                 batch_size=self.batch_size,
+                                 is_padding=self.is_padding)
+            datasets.append(dataset)
+        if len(self.train_lmdb) > 1:
+            dataset = torch.utils.data.ConcatDataset(datasets)
+
         if self.is_padding:
             sampler = None
         else:
@@ -449,7 +462,7 @@ class Trainer():
                 batch_size=self.batch_size, 
                 sampler=sampler,
                 collate_fn = collate_fn,
-                shuffle= self.is_padding and 'train' in lmdb_path,
+                shuffle= self.is_padding and 'train' in lmdb_path[0],
                 drop_last=self.model.seq_modeling == 'crnn',
                 **self.config['dataloader'])
        

@@ -36,6 +36,8 @@ dataset:
     name: data
     # path to annotation and image
     data_root: ./DATA/
+    train_lmdb: [train_hw_word_1, train_hw_word_2]
+    valid_lmdb: valid_hw_word_1
     train_annotation: sample_train_labels.txt
     valid_annotation: sample_train_labels.txt
     separate: '||||'
