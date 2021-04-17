@@ -1,3 +1,6 @@
+import tqdm
+from PIL import Image
+
 from vietocr.tool.translate import build_model, translate, translate_beam_search, process_input, predict
 from vietocr.tool.utils import download_weights
 
@@ -41,6 +44,33 @@ class Predictor():
             return s, prob
         else:
             return s
+
+    def gen_annotations(self, anno_path, anno_out):
+        with open(anno_path, 'r')  as f:
+            annotations = [anno.strip().split('||||') for anno in f.readlines()]
+
+        pred_annotations = []
+        for annotation in tqdm.tqdm(annotations):
+            try:
+                img_path = annotation[0]
+                img = Image.open(img_path)
+                pred, prob = self.predict(img)
+
+            except:
+                print("ERROR")
+                pred_annotations.append([img_path, '$$$$$', 0])
+            else:
+                pred_annotations.append([img_path, pred, prob])
+
+        with open(anno_out, 'w', encoding='utf-8') as f:
+            for anno in pred_annotations:
+                f.write('||||'.join(anno))
+
+        print("DONE")
+
+
+
+
 
 
 
