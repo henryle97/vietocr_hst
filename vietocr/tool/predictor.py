@@ -68,7 +68,7 @@ class Predictor():
 
         with open(anno_out, 'w', encoding='utf-8') as f:
             for anno in pred_annotations:
-                f.write('||||'.join([anno[0], anno[1], str(float(anno[2]))]))
+                f.write('||||'.join([anno[0], anno[1], str(float(anno[2]))]) + '\n')
 
         print("DONE")
 
