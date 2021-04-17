@@ -58,7 +58,7 @@ class Predictor():
                 img_path = annotation[0]
                 img_fullpath = os.path.join(data_root, img_path)
                 img = Image.open(img_fullpath)
-                pred, prob = self.predict(img)
+                pred, prob = self.predict(img, return_prob=True)
 
             except Exception as err:
                 print("ERROR: ", err)
