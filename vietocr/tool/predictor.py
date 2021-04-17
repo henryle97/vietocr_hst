@@ -60,15 +60,15 @@ class Predictor():
                 img = Image.open(img_fullpath)
                 pred, prob = self.predict(img)
 
-            except:
-                print("ERROR")
+            except Exception as err:
+                print("ERROR: ", err)
                 pred_annotations.append([img_path, '$$$$$', 0])
             else:
                 pred_annotations.append([img_path, pred, prob])
 
         with open(anno_out, 'w', encoding='utf-8') as f:
             for anno in pred_annotations:
-                f.write('||||'.join(anno))
+                f.write('||||'.join([anno[0], anno[1], str(float(anno[2]))]))
 
         print("DONE")
 
