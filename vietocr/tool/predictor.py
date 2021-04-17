@@ -1,3 +1,5 @@
+import os
+
 import tqdm
 from PIL import Image
 
@@ -45,15 +47,17 @@ class Predictor():
         else:
             return s
 
-    def gen_annotations(self, anno_path, anno_out):
+    def gen_annotations(self, anno_path, anno_out, data_root):
         with open(anno_path, 'r')  as f:
             annotations = [anno.strip().split('||||') for anno in f.readlines()]
 
         pred_annotations = []
         for annotation in tqdm.tqdm(annotations):
             try:
+
                 img_path = annotation[0]
-                img = Image.open(img_path)
+                img_fullpath = os.path.join(data_root, img_path)
+                img = Image.open(img_fullpath)
                 pred, prob = self.predict(img)
 
             except:

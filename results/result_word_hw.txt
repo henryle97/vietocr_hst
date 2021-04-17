@@ -6,6 +6,8 @@ Phase 1: 15/4/2021
     - Model: Vgg-seq2seq
         - Result:
             + iter 300k: val: 92.28% / WER=7.7 - test: 38.26%  / WER=61.73
+            + Finetuing +5k synth: 42% | + 15k: 43.98%
+
 
     - Model: CRNN:
         - Result:
