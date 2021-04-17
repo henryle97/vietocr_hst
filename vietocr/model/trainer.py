@@ -108,7 +108,7 @@ class Trainer():
                 data_root=self.data_root, annotation=self.train_annotation, masked_language_model=self.masked_language_model, transform=transforms)
 
         if self.valid_annotation:
-            self.valid_gen = self.data_gen(self.data_root + "/" + self.valid_lmdb,
+            self.valid_gen = self.data_gen([os.path.join(self.data_root, self.valid_lmdb)],
                     self.data_root, self.valid_annotation, masked_language_model=False)
 
         self.train_losses = []
