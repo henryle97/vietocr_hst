@@ -315,7 +315,7 @@ class Trainer():
         }
         ncols = 5
         nrows = int(math.ceil(len(img_files) / ncols))
-        fig, ax = plt.subplots(nrows, ncols, figsize=(12, 8))
+        fig, ax = plt.subplots(nrows, ncols, figsize=(12, 15))
 
         for vis_idx in range(0, len(img_files)):
             row = vis_idx // ncols
@@ -327,7 +327,7 @@ class Trainer():
             img = imgs[vis_idx].permute(1, 2, 0).cpu().detach().numpy()
 
             ax[row, col].imshow(img)
-            ax[row, col].set_title("Pred: {: <2} \n Actual: {}".format(pred_sent, actual_sent), fontname=fontname, color='r' if pred_sent != actual_sent else 'g')
+            ax[row, col].set_title("Pred: {: <2} \n Actual: {} \n prob: {:.2f}".format(pred_sent, actual_sent, prob), fontname=fontname, color='r' if pred_sent != actual_sent else 'g')
             ax[row, col].get_xaxis().set_ticks([])
             ax[row, col].get_yaxis().set_ticks([])
 
