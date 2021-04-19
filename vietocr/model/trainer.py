@@ -505,3 +505,31 @@ class Trainer():
     def count_parameters(self, model):
         return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
+
+    def gen_pseudo_labels(self, outfile=None):
+        pred_sents = []
+        img_files = []
+        probs_sents = []
+
+        for idx, batch in enumerate(tqdm.tqdm(self.valid_gen)):
+            batch = self.batch_to_device(batch)
+
+            if self.model.seq_modeling != 'crnn':
+                if self.beamsearch:
+                    translated_sentence = batch_translate_beam_search(batch['img'], self.model)
+                    prob = None
+                else:
+                    translated_sentence, prob = translate(batch['img'], self.model)
+                pred_sent = self.vocab.batch_decode(translated_sentence.tolist())
+            else:
+                translated_sentence, prob = translate_crnn(batch['img'], self.model)
+                pred_sent = self.vocab.batch_decode(translated_sentence.tolist(), crnn=True)
+
+            pred_sents.extend(pred_sent)
+            img_files.extend(batch['filenames'])
+            probs_sents.extend(prob)
+        assert len(pred_sents) == len(img_files) and len(img_files) == len(probs_sents)
+        with open(outfile, 'w', encoding='utf-8') as f:
+            for anno in zip(img_files, pred_sents, probs_sents):
+                f.write('||||'.join([anno[0], anno[1], str(float(anno[2]))]) + '\n')
+

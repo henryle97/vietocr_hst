@@ -25,6 +25,8 @@ class Predictor():
         self.config = config
         self.model = model
         self.vocab = vocab
+
+
         
     def predict(self, img, return_prob=False):
         img = process_input(img, self.config['dataset']['image_height'], 
@@ -46,6 +48,8 @@ class Predictor():
             return s, prob
         else:
             return s
+
+
 
     def gen_annotations(self, anno_path, anno_out, data_root):
         with open(anno_path, 'r')  as f:

@@ -5,9 +5,15 @@ Phase 1: 15/4/2021
 
     - Model: Vgg-seq2seq
         - Result:
-            + iter 300k: val: 92.28% / WER=7.7 - test: 38.26%  / WER=61.73
-            + Finetuing +5k synth: 42% | + 15k: 43.98%
+            + Training 85k VNonDB: iter 300k: val: 92.28% / WER=7.7 - test: 38.26%  / WER=61.73 (1)
+            + Fine tuning from last.pt(1): 100k iter
+                + 5k synth: 42% | + 15k (noise): 43.98% | +9k (clean: 79.70%):  45.86% (2)
 
+            + Fine tuning from best.pt (2): 100k iter
+                + 50k gen (dict_3k): 50.92%   (3)                  | Total dataset: 85k + 9k + 50k
+
+            + Finetuning from best.pt (3): 200k iter
+                + 170k (add 25k valid): 53.35% (4)
 
     - Model: CRNN:
         - Result:
