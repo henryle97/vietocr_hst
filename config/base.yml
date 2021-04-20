@@ -58,6 +58,7 @@ aug:
 predictor:
     # disable or enable beamsearch while prediction, use beamsearch will be slower
     beamsearch: False
+    sensitive_case: True
 
 quiet: False
 

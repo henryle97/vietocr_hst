@@ -22,7 +22,7 @@ def download_config(id):
     config = yaml.safe_load(r.text)
     return config
 
-def compute_accuracy(ground_truth, predictions, mode='full_sequence'):
+def compute_accuracy(ground_truth, predictions,sensitive_case=True,  mode='full_sequence'):
     """
     Computes accuracy
     :param ground_truth:
@@ -42,6 +42,9 @@ def compute_accuracy(ground_truth, predictions, mode='full_sequence'):
 
         for index, label in enumerate(ground_truth):
             prediction = predictions[index]
+            if not sensitive_case:
+                prediction = prediction.lower()
+                label = label.lower()
             total_count = len(label)
             correct_count = 0
             try:
@@ -64,6 +67,9 @@ def compute_accuracy(ground_truth, predictions, mode='full_sequence'):
             correct_count = 0
             for index, label in enumerate(ground_truth):
                 prediction = predictions[index]
+                if not sensitive_case:
+                    prediction = prediction.lower()
+                    label = label.lower()
                 if prediction == label:
                     correct_count += 1
             avg_accuracy = correct_count / len(ground_truth)
@@ -77,6 +83,9 @@ def compute_accuracy(ground_truth, predictions, mode='full_sequence'):
         for index, label in enumerate(ground_truth):
             try:
                 prediction = predictions[index]
+                if not sensitive_case:
+                    prediction = prediction.lower()
+                    label = label.lower()
                 wer = jiwer.wer(label, prediction)
                 wer_list.append(wer)
             except ZeroDivisionError:

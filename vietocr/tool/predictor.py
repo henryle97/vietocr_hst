@@ -20,7 +20,10 @@ class Predictor():
         else:
             weights = config['weights']
 
-        model.load_state_dict(torch.load(weights, map_location=torch.device(device)))
+        try:
+            model.load_state_dict(torch.load(weights, map_location=torch.device(device))['state_dict'])
+        except:
+            model.load_state_dict(torch.load(weights, map_location=torch.device(device)))
 
         self.config = config
         self.model = model

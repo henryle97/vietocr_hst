@@ -282,9 +282,10 @@ class Trainer():
         pred_sents, actual_sents, _, _, _ = self.predict(sample=sample)
         time_predict = time.time() - t1
 
-        acc_full_seq = compute_accuracy(actual_sents, pred_sents, mode='full_sequence')
-        acc_per_char = compute_accuracy(actual_sents, pred_sents, mode='per_char')
-        wer = compute_accuracy(actual_sents, pred_sents, mode='wer')
+        sensitive_case = self.config['predictor']['sensitive_case']
+        acc_full_seq = compute_accuracy(actual_sents, pred_sents,sensitive_case , mode='full_sequence')
+        acc_per_char = compute_accuracy(actual_sents, pred_sents,sensitive_case, mode='per_char')
+        wer = compute_accuracy(actual_sents, pred_sents,sensitive_case, mode='wer')
 
 
         if measure_time:

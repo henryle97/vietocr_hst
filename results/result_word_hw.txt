@@ -13,11 +13,20 @@ Phase 1: 15/4/2021
                 + 50k gen (dict_3k): 50.92%   (3)                  | Total dataset: 85k + 9k + 50k
 
             + Finetuning from best.pt (3): 200k iter
-                + 170k (add 25k valid): 53.35% (4)
+                + 170k (add 25k valid): 53.35% (4)   | not sensitive_case: 55.98%  (4)
+            + Finetuning from best.pt (4): 100k iter
+                + Acc=53.83%
+
+
 
     - Model: CRNN:
         - Result:
             + iter 300k: val: 87.65% / WER=12.34 - test: 29.63% / WER=70.36
+
+
+
+    - Dataset:
+        + 200k from dict_10k  --filter --> 70k (hw_word_70k_dict_full_filter - sever 48)
 
 
 TODO:

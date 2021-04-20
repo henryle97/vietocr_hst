@@ -38,10 +38,10 @@ def main():
 
     config['aug']['masked_language_model'] = False
 
-    # optim_params = {
-    #     'max_lr': 0.00001
-    # }
-    # config['optimizer'].update(optim_params)
+    optim_params = {
+        'max_lr': 0.00001
+    }
+    config['optimizer'].update(optim_params)
 
     config['trainer'].update(trainer_params)
     # config['trainer']['resume_from'] = './logs/hw_small_finetuning/last.pt'
