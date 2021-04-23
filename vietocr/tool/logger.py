@@ -8,7 +8,7 @@ class Logger():
         os.makedirs(log_dir, exist_ok=True)
 
         timestamp = time.strftime('%Y%m%d_%H%M%S', time.localtime())
-        format_ = '%(asctime)s - %(levelname)s - %message)s'
+        format_ = '%(asctime)s - %(levelname)s - %(message)s'
         formater = logging.Formatter(format_)
         logger = logging.getLogger()
         logger.setLevel(logging.DEBUG)
