@@ -47,10 +47,10 @@ class ImgAugTransform:
         
         # distort
         # geographic transformation
-        sometimes(iaa.OneOf([iaa.Lambda(func_images=distort_func),
-                             iaa.Lambda(func_images=stretch_func),
-                             iaa.Lambda(func_images=perspective_func),
-                             ])),
+        # sometimes(iaa.OneOf([iaa.Lambda(func_images=distort_func),
+        #                      iaa.Lambda(func_images=stretch_func),
+        #                      iaa.Lambda(func_images=perspective_func),
+        #                      ])),
         sometimes(iaa.Crop(percent=(0.01, 0.05), sample_independently=True)),
         sometimes(iaa.PerspectiveTransform(scale=(0.01, 0.01))),
         sometimes(iaa.Affine(scale=(0.7, 1.3), translate_percent=(-0.1, 0.1), 
