@@ -105,11 +105,12 @@ class Trainer():
         train_lmdb_paths = [os.path.join(self.data_root, lmdb_path) for lmdb_path in self.train_lmdb]
 
         self.train_gen = self.data_gen(lmdb_paths=train_lmdb_paths,
-                data_root=self.data_root, annotation=self.train_annotation, masked_language_model=self.masked_language_model, transform=transforms)
+                data_root=self.data_root, annotation=self.train_annotation,
+                masked_language_model=self.masked_language_model, transform=transforms, is_train=True)
 
         if self.valid_annotation:
-            self.valid_gen = self.data_gen([os.path.join(self.data_root, self.valid_lmdb)],
-                    self.data_root, self.valid_annotation, masked_language_model=False)
+            self.valid_gen = self.data_gen(lmdb_paths=[os.path.join(self.data_root, self.valid_lmdb)],
+                    data_root=self.data_root, annotation=self.valid_annotation, masked_language_model=False)
 
         self.train_losses = []
         self.logger.info("Number batch samples of training: %d" % len(self.train_gen))
@@ -439,7 +440,7 @@ class Trainer():
 
         return batch
 
-    def data_gen(self, lmdb_paths, data_root, annotation, masked_language_model=True, transform=None):
+    def data_gen(self, lmdb_paths, data_root, annotation, masked_language_model=True, transform=None, is_train=False):
         datasets = []
         for lmdb_path in lmdb_paths:
             dataset = OCRDataset(lmdb_path=lmdb_path,
@@ -467,7 +468,7 @@ class Trainer():
                 batch_size=self.batch_size, 
                 sampler=sampler,
                 collate_fn = collate_fn,
-                shuffle= self.is_padding and 'train' in lmdb_path[0],
+                shuffle= is_train,
                 drop_last=self.model.seq_modeling == 'crnn',
                 **self.config['dataloader'])
        
