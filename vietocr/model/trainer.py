@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 import time
 from torch.utils.tensorboard import SummaryWriter
 from vietocr.tool.config import Cfg
+from vietocr.tool.logger import Logger
 import pandas as pd
 
 
@@ -48,24 +49,24 @@ class Trainer():
         self.metrics = config['trainer']['metrics']
         self.is_padding = config['dataset']['is_padding']
 
-        # LOGGER
-        # logger = config['trainer']['log']
-        # if logger:
-        #     self.logger = Logger(logger)
 
         self.tensorboard_dir = config['monitor']['log_dir']
-        if not os.path.exists( self.tensorboard_dir):
+        if not os.path.exists(self.tensorboard_dir):
             os.makedirs(self.tensorboard_dir, exist_ok=True)
         self.writer = SummaryWriter(self.tensorboard_dir)
 
+        # LOGGER
+        logger = os.path.join(config['monitor']['log_dir'], 'log.txt')
+        self.logger = Logger(logger)
+        self.logger.info(config)
 
         self.iter = 0
         self.best_acc = 0
-
         self.scheduler = None
         self.is_finetuning = config['trainer']['is_finetuning']
+
         if self.is_finetuning:
-            print("Finetuning model ---->")
+            self.logger.info("Finetuning model ---->")
             if self.model.seq_modeling == 'crnn':
                 self.optimizer = Adam(lr=0.0001, params=self.model.parameters(), betas=(0.5, 0.999))
             else:
@@ -84,7 +85,7 @@ class Trainer():
         # Pretrained model
         if config['trainer']['pretrained']:
             self.load_weights(config['trainer']['pretrained'])
-            print("Loaded trained model from: {}".format(config['trainer']['pretrained']))
+            self.logger.info("Loaded trained model from: {}".format(config['trainer']['pretrained']))
 
         # Resume
         elif config['trainer']['resume_from']:
@@ -94,7 +95,7 @@ class Trainer():
                     if torch.is_tensor(v):
                         state[k] = v.to(torch.device(self.device))
 
-            print("Resume from {}".format(config['trainer']['resume_from']))
+            self.logger.info("Resume training from {}".format(config['trainer']['resume_from']))
 
 
         # DATASET
@@ -112,12 +113,12 @@ class Trainer():
                     self.data_root, self.valid_annotation, masked_language_model=False)
 
         self.train_losses = []
-        print("\nNumber batch samples of training: ", len(self.train_gen))
-        print("Number batch samples of valid: ", len(self.valid_gen))
+        self.logger.info("Number batch samples of training: ", len(self.train_gen))
+        self.logger.info("Number batch samples of valid: ", len(self.valid_gen))
 
         config_savepath = os.path.join(self.tensorboard_dir, "config.yml")
         if not os.path.exists(config_savepath):
-            print("Saving config file at: ", config_savepath)
+            self.logger.info("Saving config file at: ", config_savepath)
             Cfg(config).save(config_savepath)
 
 
@@ -127,12 +128,9 @@ class Trainer():
         
         total_loader_time = 0
         total_gpu_time = 0
-        best_acc = 0
-
         data_iter = iter(self.train_gen)
         for i in range(self.num_iters):
             self.iter += 1
-
             start = time.time()
 
             try:
@@ -142,46 +140,49 @@ class Trainer():
                 batch = next(data_iter)
 
             total_loader_time += time.time() - start
-
             start = time.time()
-            loss = self.step(batch)
-            total_gpu_time += time.time() - start
 
+            # LOSS
+            loss = self.step(batch)
             total_loss += loss
             self.train_losses.append((self.iter, loss))
 
+            total_gpu_time += time.time() - start
+
             if self.iter % self.print_every == 0:
 
-                info = 'iter: {:06d} - train loss: {:.3f} - lr: {:.2e} - load time: {:.2f} - gpu time: {:.2f}'.format(self.iter, 
+                info = 'Iter: {:06d} - Train loss: {:.3f} - lr: {:.2e} - load time: {:.2f} - gpu time: {:.2f}'.format(self.iter,
                         total_loss/self.print_every, self.optimizer.param_groups[0]['lr'], 
                         total_loader_time, total_gpu_time)
                 lastest_loss = total_loss/self.print_every
                 total_loss = 0
                 total_loader_time = 0
                 total_gpu_time = 0
-                print(info) 
-                # self.logger.log(info)
+                self.logger.info(info)
 
             if self.valid_annotation and self.iter % self.valid_every == 0:
                 val_time = time.time()
                 val_loss = self.validate()
                 acc_full_seq, acc_per_char, wer = self.precision(self.metrics)
 
-                info = 'iter: {:06d} - valid loss: {:.3f} - acc full seq: {:.4f} - acc per char: {:.4f} - WER: {:.4f} - Time: {:.4f}'.format(self.iter, val_loss, acc_full_seq, acc_per_char, wer, time.time() - val_time)
-
-                print(info)
-                # self.logger.log(info)
+                self.logger.info("Iter: {:06d}, start validating".format(self.iter))
+                info = 'Iter: {:06d} - Valid loss: {:.3f} - Acc full seq: {:.4f} - Acc per char: {:.4f} - WER: {:.4f} - Time: {:.4f}'.format(self.iter, val_loss, acc_full_seq, acc_per_char, wer, time.time() - val_time)
+                self.logger.info(info)
 
                 if acc_full_seq > self.best_acc:
                     self.save_weights(self.tensorboard_dir + "/best.pt")
                     self.best_acc = acc_full_seq
 
-                self.save_checkpoint(self.tensorboard_dir + "/last.pt")
+                self.logger.info("Iter: {:06d} - Best acc: {:.4f}".format(self.iter, self.best_acc))
+
+                filename = 'last.pt'
+                filepath = os.path.join(self.tensorboard_dir, filename)
+                self.logger.info("Save checkpoint %s", filename)
+                self.save_checkpoint(filepath)
 
                 log_loss = {'train loss': lastest_loss,
                             'val loss': val_loss}
                 self.writer.add_scalars('Loss', log_loss, self.iter)
-                # self.writer.add_scalar('valid loss', val_loss, self.iter)
                 self.writer.add_scalar('WER', wer, self.iter)
 
     def validate(self):
@@ -216,7 +217,7 @@ class Trainer():
         
         return total_loss
     
-    def predict(self, sample=None, vis_tensorboard=False):
+    def predict(self, sample=None):
         pred_sents = []
         actual_sents = []
         img_files = []
@@ -341,28 +342,32 @@ class Trainer():
         pred_sents, actual_sents, img_files, probs, imgs = self.predict(sample)
         save_predictions(csv_file, pred_sents, actual_sents, img_files)
 
-    def vis_data(self, sample=16):
-        ncols=4
-        nrows = sample // ncols
-        fig, ax = plt.subplots(nrows=nrows, ncols=ncols)
-        n = 0
-        for batch in self.train_gen:
-            for i in range(self.batch_size):
-                row = n // ncols
-                col = n % ncols
-                img = batch['img'][i].numpy().transpose(1, 2, 0)
-                sent = self.vocab.decode(batch['tgt_input'].T[i].tolist())
+    def vis_data(self, sample=20):
+
+        ncols = 5
+        nrows = int(math.ceil(sample / ncols))
+        fig, ax = plt.subplots(nrows, ncols, figsize=(12, 12))
+
+        num_plots = 0
+        for idx, batch in enumerate(self.train_gen):
+            for vis_idx in range(self.batch_size):
+                row = vis_idx // ncols
+                col = vis_idx % ncols
+
+                img = batch['img'][vis_idx].numpy().transpose(1, 2, 0)
+                sent = self.vocab.decode(batch['tgt_input'].T[vis_idx].tolist())
 
                 ax[row, col].imshow(img)
-                ax[row, col].set_title(sent)
+                ax[row, col].set_title("Label: {: <2}".format(sent), fontsize=16, color='g')
+
                 ax[row, col].get_xaxis().set_ticks([])
                 ax[row, col].get_yaxis().set_ticks([])
 
-                n+=1
-                if n >= sample:
+                num_plots += 1
+                if num_plots >= sample:
+                    plt.subplots_adjust()
+                    fig.savefig('vis_dataset.png')
                     return
-
-        fig.savefig('dataset.png')
 
 
 

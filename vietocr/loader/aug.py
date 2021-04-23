@@ -3,6 +3,26 @@ import numpy as np
 from imgaug import augmenters as iaa
 import imgaug as ia
 
+from vietocr.loader.augment_utils import distort, stretch, perspective
+
+def distort_func(images, random_state, parents, hooks):
+    for i in range(len(images)):
+        images[i] = distort(images[i])
+
+    return images
+
+def stretch_func(images, random_state, parents, hooks):
+    for i in range(len(images)):
+        images[i] = stretch(images[i])
+
+    return images
+
+def perspective_func(images, random_state, parents, hooks):
+    for i in range(len(images)):
+        images[i] = perspective(images[i])
+
+    return images
+
 class ImgAugTransform:
   def __init__(self):
     sometimes = lambda aug: iaa.Sometimes(0.3, aug)
@@ -26,6 +46,11 @@ class ImgAugTransform:
         sometimes(iaa.JpegCompression(compression=(5, 80))),
         
         # distort
+        # geographic transformation
+        sometimes(iaa.OneOf([iaa.Lambda(func_images=distort_func),
+                             iaa.Lambda(func_images=stretch_func),
+                             iaa.Lambda(func_images=perspective_func),
+                             ])),
         sometimes(iaa.Crop(percent=(0.01, 0.05), sample_independently=True)),
         sometimes(iaa.PerspectiveTransform(scale=(0.01, 0.01))),
         sometimes(iaa.Affine(scale=(0.7, 1.3), translate_percent=(-0.1, 0.1), 
