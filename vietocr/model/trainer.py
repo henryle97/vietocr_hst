@@ -351,8 +351,8 @@ class Trainer():
         num_plots = 0
         for idx, batch in enumerate(self.train_gen):
             for vis_idx in range(self.batch_size):
-                row = vis_idx // ncols
-                col = vis_idx % ncols
+                row = num_plots // ncols
+                col = num_plots % ncols
 
                 img = batch['img'][vis_idx].numpy().transpose(1, 2, 0)
                 sent = self.vocab.decode(batch['tgt_input'].T[vis_idx].tolist())
