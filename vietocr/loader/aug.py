@@ -19,7 +19,7 @@ def stretch_func(images, random_state, parents, hooks):
 
 def perspective_func(images, random_state, parents, hooks):
     for i in range(len(images)):
-        images[i] = perspective(images[i], 4)
+        images[i] = perspective(images[i])
 
     return images
 
