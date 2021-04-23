@@ -7,19 +7,19 @@ from vietocr.loader.augment_utils import distort, stretch, perspective
 
 def distort_func(images, random_state, parents, hooks):
     for i in range(len(images)):
-        images[i] = distort(images[i])
+        images[i] = distort(images[i], 4)
 
     return images
 
 def stretch_func(images, random_state, parents, hooks):
     for i in range(len(images)):
-        images[i] = stretch(images[i])
+        images[i] = stretch(images[i], 4)
 
     return images
 
 def perspective_func(images, random_state, parents, hooks):
     for i in range(len(images)):
-        images[i] = perspective(images[i])
+        images[i] = perspective(images[i], 4)
 
     return images
 
