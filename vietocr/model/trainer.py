@@ -56,8 +56,7 @@ class Trainer():
         self.writer = SummaryWriter(self.tensorboard_dir)
 
         # LOGGER
-        logger = os.path.join(config['monitor']['log_dir'], 'log.txt')
-        self.logger = Logger(logger)
+        self.logger = Logger(config['monitor']['log_dir'])
         self.logger.info(config)
 
         self.iter = 0
