@@ -112,12 +112,12 @@ class Trainer():
                     self.data_root, self.valid_annotation, masked_language_model=False)
 
         self.train_losses = []
-        self.logger.info("Number batch samples of training: ", len(self.train_gen))
-        self.logger.info("Number batch samples of valid: ", len(self.valid_gen))
+        self.logger.info("Number batch samples of training: %d" % len(self.train_gen))
+        self.logger.info("Number batch samples of valid: %d" % len(self.valid_gen))
 
         config_savepath = os.path.join(self.tensorboard_dir, "config.yml")
         if not os.path.exists(config_savepath):
-            self.logger.info("Saving config file at: ", config_savepath)
+            self.logger.info("Saving config file at: %s" % config_savepath)
             Cfg(config).save(config_savepath)
 
 
@@ -176,7 +176,7 @@ class Trainer():
 
                 filename = 'last.pt'
                 filepath = os.path.join(self.tensorboard_dir, filename)
-                self.logger.info("Save checkpoint %s", filename)
+                self.logger.info("Save checkpoint %s" % filename)
                 self.save_checkpoint(filepath)
 
                 log_loss = {'train loss': lastest_loss,
